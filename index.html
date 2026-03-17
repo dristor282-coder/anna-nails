@@ -96,11 +96,31 @@ section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
 .form-submit:hover{background:var(--rose-dark)}
 .form-note{font-size:0.75rem;color:var(--mid);text-align:center;margin-top:0.75rem}
 
-footer{background:var(--dark);color:#fff;padding:3rem 2rem;text-align:center}
-.footer-inner{max-width:1200px;margin:0 auto}
-.footer-logo{font-family:var(--font-serif);font-size:1.8rem;font-weight:300;margin-bottom:0.5rem}
-.footer-logo span{color:var(--rose);font-style:italic}
-.footer-sub{font-size:0.8rem;color:rgba(255,255,255,0.4);letter-spacing:0.1em}
+<section style="padding:3rem 2rem;max-width:1200px;margin:0 auto">
+  <div class="section-label">Как добраться</div>
+  <div class="section-title">Адрес</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2rem;align-items:start">
+    <div style="background:#fff;border-radius:1.25rem;padding:2rem;border:0.5px solid rgba(200,114,106,0.12)">
+      <p style="font-size:1rem;margin-bottom:0.75rem">📍 Москва, ул. Примерная, д. 1</p>
+      <p style="font-size:0.85rem;color:var(--mid);margin-bottom:0.5rem">🚇 5 минут от метро Центральная</p>
+      <p style="font-size:0.85rem;color:var(--mid);margin-bottom:0.5rem">🕐 Пн-Сб: 9:00 — 20:00</p>
+      <p style="font-size:0.85rem;color:var(--mid)">📞 +7 (999) 000-00-00</p>
+    </div>
+    <iframe src="https://yandex.ru/map-widget/v1/?text=Москва" width="100%" height="250" frameborder="0" style="border-radius:1.25rem"></iframe>
+  </div>
+</section>
+  
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Anna <span>Nails</span></div>
+    <div class="footer-sub">Мастер маникюра · Москва</div>
+    <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:1rem">
+      <a href="https://instagram.com/anna_nails" style="color:var(--rose);font-size:0.85rem;letter-spacing:0.1em">Instagram</a>
+      <a href="https://tiktok.com/@anna_nails" style="color:var(--rose);font-size:0.85rem;letter-spacing:0.1em">TikTok</a>
+      <a href="https://t.me/anna_nails" style="color:var(--rose);font-size:0.85rem;letter-spacing:0.1em">Telegram</a>
+    </div>
+  </div>
+</footer>
 
 @media(max-width:768px){
 .hero{grid-template-columns:1fr;padding-top:5rem}
