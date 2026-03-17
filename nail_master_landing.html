@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--rose:#C8726A;--rose-light:#F5E8E6;--rose-dark:#8B4A44;
+--cream:#FAF7F4;--dark:#1A1614;--mid:#6B5E5A;
+--font-serif:'Cormorant Garamond',serif;--font-sans:'Jost',sans-serif;
+}
+body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);font-size:16px;line-height:1.7}
+a{text-decoration:none;color:inherit}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.25rem 2rem;display:flex;justify-content:space-between;align-items:center;background:rgba(250,247,244,0.92);backdrop-filter:blur(8px);border-bottom:0.5px solid rgba(200,114,106,0.15)}
+.logo{font-family:var(--font-serif);font-size:1.4rem;font-weight:300;letter-spacing:0.05em;color:var(--dark)}
+.logo span{color:var(--rose);font-style:italic}
+nav ul{list-style:none;display:flex;gap:2rem}
+nav ul li a{font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);transition:color 0.2s}
+nav ul li a:hover{color:var(--rose)}
+.nav-btn{background:var(--rose);color:#fff;padding:0.5rem 1.25rem;border-radius:2rem;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;border:none;cursor:pointer;transition:background 0.2s}
+.nav-btn:hover{background:var(--rose-dark)}
+
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:6rem 2rem 3rem;max-width:1200px;margin:0 auto;gap:4rem}
+.hero-text h1{font-family:var(--font-serif);font-size:clamp(3rem,6vw,5.5rem);font-weight:300;line-height:1.1;margin-bottom:1.5rem;color:var(--dark)}
+.hero-text h1 em{color:var(--rose);font-style:italic}
+.hero-text p{font-size:1rem;color:var(--mid);max-width:420px;margin-bottom:2.5rem;line-height:1.8;font-weight:300}
+.hero-actions{display:flex;gap:1rem;align-items:center}
+.btn-primary{background:var(--rose);color:#fff;padding:0.85rem 2rem;border-radius:3rem;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.2s;font-family:var(--font-sans)}
+.btn-primary:hover{background:var(--rose-dark);transform:translateY(-1px)}
+.btn-ghost{color:var(--rose);font-size:0.85rem;letter-spacing:0.08em;display:flex;align-items:center;gap:0.4rem;cursor:pointer;border:none;background:none;font-family:var(--font-sans)}
+.btn-ghost:hover{text-decoration:underline}
+
+.hero-visual{position:relative;height:520px}
+.hero-card-main{position:absolute;top:20px;right:0;width:75%;background:#fff;border-radius:1.5rem;overflow:hidden;border:0.5px solid rgba(200,114,106,0.15)}
+.hero-card-main img,.img-placeholder{width:100%;height:340px;background:linear-gradient(135deg,var(--rose-light) 0%,#EDD5D2 50%,#F0C8C4 100%);display:flex;align-items:center;justify-content:center}
+.img-placeholder-text{font-family:var(--font-serif);font-size:1.2rem;color:var(--rose-dark);font-style:italic;opacity:0.7}
+.hero-card-mini{position:absolute;bottom:20px;left:0;background:#fff;border-radius:1rem;padding:1rem 1.25rem;border:0.5px solid rgba(200,114,106,0.15);min-width:180px}
+.hero-card-mini .label{font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.25rem}
+.hero-card-mini .value{font-family:var(--font-serif);font-size:1.6rem;color:var(--dark)}
+.hero-card-mini .sub{font-size:0.75rem;color:var(--rose)}
+.badge-float{position:absolute;top:0;left:30px;background:var(--rose);color:#fff;padding:0.5rem 1rem;border-radius:2rem;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase}
+
+.stats{background:#fff;padding:3rem 2rem;border-top:0.5px solid rgba(200,114,106,0.1);border-bottom:0.5px solid rgba(200,114,106,0.1)}
+.stats-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;text-align:center}
+.stat-item .num{font-family:var(--font-serif);font-size:3rem;color:var(--rose);font-weight:300}
+.stat-item .desc{font-size:0.82rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);margin-top:0.25rem}
+
+section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
+.section-label{font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--rose);margin-bottom:0.75rem}
+.section-title{font-family:var(--font-serif);font-size:clamp(2rem,4vw,3.2rem);font-weight:300;line-height:1.2;margin-bottom:1rem}
+.section-title em{color:var(--rose);font-style:italic}
+
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:3rem}
+.service-card{background:#fff;border-radius:1.25rem;padding:1.75rem;border:0.5px solid rgba(200,114,106,0.12);transition:all 0.25s;cursor:pointer}
+.service-card:hover{border-color:var(--rose);transform:translateY(-3px)}
+.service-icon{width:44px;height:44px;background:var(--rose-light);border-radius:0.75rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1.3rem}
+.service-card h3{font-family:var(--font-serif);font-size:1.2rem;font-weight:400;margin-bottom:0.5rem}
+.service-card p{font-size:0.82rem;color:var(--mid);line-height:1.6}
+.service-price{margin-top:1rem;font-size:0.95rem;font-weight:500;color:var(--rose)}
+
+.portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:3rem}
+.portfolio-item{border-radius:1rem;overflow:hidden;aspect-ratio:1;cursor:pointer;position:relative}
+.portfolio-item .ph{width:100%;height:100%;background:linear-gradient(135deg,var(--rose-light),#EDD5D2);display:flex;align-items:center;justify-content:center;transition:transform 0.3s}
+.portfolio-item:hover .ph{transform:scale(1.05)}
+.ph-label{font-family:var(--font-serif);font-size:0.9rem;color:var(--rose-dark);opacity:0.6;font-style:italic}
+.portfolio-item:nth-child(2) .ph{background:linear-gradient(135deg,#F0DDD5,#E8C4BC)}
+.portfolio-item:nth-child(3) .ph{background:linear-gradient(135deg,#EDD5D2,#DEB8B3)}
+.portfolio-item:nth-child(4) .ph{background:linear-gradient(135deg,#F5E0DC,var(--rose-light))}
+.portfolio-item:nth-child(5) .ph{background:linear-gradient(135deg,#E8C4BC,#F0DDD5)}
+.portfolio-item:nth-child(6) .ph{background:linear-gradient(135deg,#DEB8B3,#EDD5D2)}
+
+.reviews-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:3rem}
+.review-card{background:#fff;border-radius:1.25rem;padding:1.75rem;border:0.5px solid rgba(200,114,106,0.12)}
+.stars{color:var(--rose);font-size:0.9rem;letter-spacing:0.1em;margin-bottom:0.75rem}
+.review-text{font-size:0.9rem;color:var(--mid);line-height:1.7;font-style:italic;margin-bottom:1rem;font-family:var(--font-serif)}
+.reviewer{display:flex;align-items:center;gap:0.75rem}
+.reviewer-avatar{width:36px;height:36px;border-radius:50%;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:500;color:var(--rose-dark)}
+.reviewer-name{font-size:0.82rem;font-weight:500}
+.reviewer-sub{font-size:0.75rem;color:var(--mid)}
+
+.booking-section{background:var(--rose-light);border-radius:2rem;padding:4rem 3rem;text-align:center;margin:2rem 0}
+.booking-section .section-title{margin-bottom:0.5rem}
+.booking-section p{color:var(--mid);margin-bottom:2.5rem;font-size:0.95rem}
+
+.booking-form{background:#fff;border-radius:1.5rem;padding:2.5rem;max-width:560px;margin:0 auto;text-align:left}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.4rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:0.75rem 1rem;border:0.5px solid #DDD0CE;border-radius:0.75rem;font-family:var(--font-sans);font-size:0.9rem;color:var(--dark);background:#fff;transition:border-color 0.2s;outline:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--rose)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-submit{width:100%;background:var(--rose);color:#fff;padding:1rem;border-radius:3rem;font-size:0.85rem;letter-spacing:0.12em;text-transform:uppercase;border:none;cursor:pointer;transition:background 0.2s;font-family:var(--font-sans);margin-top:0.5rem}
+.form-submit:hover{background:var(--rose-dark)}
+.form-note{font-size:0.75rem;color:var(--mid);text-align:center;margin-top:0.75rem}
+
+footer{background:var(--dark);color:#fff;padding:3rem 2rem;text-align:center}
+.footer-inner{max-width:1200px;margin:0 auto}
+.footer-logo{font-family:var(--font-serif);font-size:1.8rem;font-weight:300;margin-bottom:0.5rem}
+.footer-logo span{color:var(--rose);font-style:italic}
+.footer-sub{font-size:0.8rem;color:rgba(255,255,255,0.4);letter-spacing:0.1em}
+
+@media(max-width:768px){
+.hero{grid-template-columns:1fr;padding-top:5rem}
+.hero-visual{display:none}
+.portfolio-grid{grid-template-columns:repeat(2,1fr)}
+.form-row{grid-template-columns:1fr}
+nav ul{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Anna <span>Nails</span></div>
+  <ul>
+    <li><a href="#services">Услуги</a></li>
+    <li><a href="#portfolio">Портфолио</a></li>
+    <li><a href="#reviews">Отзывы</a></li>
+    <li><a href="#booking">Запись</a></li>
+  </ul>
+  <button class="nav-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Записаться</button>
+</nav>
+
+<div class="hero">
+  <div class="hero-text">
+    <p class="section-label">Мастер маникюра · Москва</p>
+    <h1>Красота<br>в каждой<br><em>детали</em></h1>
+    <p>Профессиональный маникюр, педикюр и наращивание ногтей. Индивидуальный подход и материалы премиум-класса.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Записаться онлайн</button>
+      <button class="btn-ghost" onclick="document.getElementById('portfolio').scrollIntoView({behavior:'smooth'})">Смотреть работы →</button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="badge-float">Доступны места</div>
+    <div class="hero-card-main">
+      <div class="img-placeholder"><span class="img-placeholder-text">фото мастера</span></div>
+    </div>
+    <div class="hero-card-mini">
+      <div class="label">Довольных клиентов</div>
+      <div class="value">500+</div>
+      <div class="sub">за 3 года работы</div>
+    </div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="num">500+</div><div class="desc">Клиентов</div></div>
+    <div class="stat-item"><div class="num">3</div><div class="desc">Года опыта</div></div>
+    <div class="stat-item"><div class="num">100%</div><div class="desc">Натуральные материалы</div></div>
+  </div>
+</div>
+
+<section id="services">
+  <div class="section-label">Что я делаю</div>
+  <div class="section-title">Услуги и <em>прайс</em></div>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-icon">💅</div>
+      <h3>Маникюр</h3>
+      <p>Классический или аппаратный маникюр с покрытием гель-лаком</p>
+      <div class="service-price">от 1 500 ₽</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">✨</div>
+      <h3>Педикюр</h3>
+      <p>Аппаратный педикюр с покрытием и уходом за кутикулой</p>
+      <div class="service-price">от 2 000 ₽</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🌸</div>
+      <h3>Наращивание</h3>
+      <p>Наращивание на типсы или формы, любая длина и форма</p>
+      <div class="service-price">от 2 500 ₽</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🎨</div>
+      <h3>Дизайн</h3>
+      <p>Роспись, втирка, фольга, стразы — любой дизайн на выбор</p>
+      <div class="service-price">от 500 ₽</div>
+    </div>
+  </div>
+</section>
+
+<section id="portfolio" style="background:#fff;max-width:100%;padding:5rem 2rem">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="section-label">Мои работы</div>
+    <div class="section-title">Портфолио</div>
+    <div class="portfolio-grid">
+      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="reviews">
+  <div class="section-label">Что говорят клиенты</div>
+  <div class="section-title"><em>Отзывы</em></div>
+  <div class="reviews-grid">
+    <div class="review-card">
+      <div class="stars">★★★★★</div>
+      <p class="review-text">«Анна — лучший мастер, к которому я ходила. Очень аккуратно, красиво и держится долго!»</p>
+      <div class="reviewer">
+        <div class="reviewer-avatar">МС</div>
+        <div><div class="reviewer-name">Мария С.</div><div class="reviewer-sub">постоянный клиент</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="stars">★★★★★</div>
+      <p class="review-text">«Всегда в срок, результат превосходит ожидания. Рекомендую всем подругам без исключения!»</p>
+      <div class="reviewer">
+        <div class="reviewer-avatar">ЕК</div>
+        <div><div class="reviewer-name">Екатерина К.</div><div class="reviewer-sub">клиент 2 года</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="stars">★★★★★</div>
+      <p class="review-text">«Удобная запись онлайн, приятная атмосфера и невероятный результат. Буду возвращаться!»</p>
+      <div class="reviewer">
+        <div class="reviewer-avatar">АП</div>
+        <div><div class="reviewer-name">Алина П.</div><div class="reviewer-sub">новый клиент</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="booking" style="padding:3rem 2rem;max-width:1200px;margin:0 auto">
+  <div class="booking-section">
+    <div class="section-label">Онлайн запись</div>
+    <div class="section-title">Запишитесь<br><em>прямо сейчас</em></div>
+    <p>Выберите услугу и удобное время — я свяжусь с вами для подтверждения</p>
+    <div class="booking-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Имя</label>
+          <input type="text" placeholder="Ваше имя">
+        </div>
+        <div class="form-group">
+          <label>Телефон</label>
+          <input type="tel" placeholder="+7 (___) ___-__-__">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Услуга</label>
+        <select>
+          <option value="">Выберите услугу</option>
+          <option>Маникюр от 1 500 ₽</option>
+          <option>Педикюр от 2 000 ₽</option>
+          <option>Наращивание от 2 500 ₽</option>
+          <option>Дизайн от 500 ₽</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Дата</label>
+          <input type="date">
+        </div>
+        <div class="form-group">
+          <label>Время</label>
+          <select>
+            <option>09:00</option><option>10:00</option><option>11:00</option>
+            <option>12:00</option><option>13:00</option><option>14:00</option>
+            <option>15:00</option><option>16:00</option><option>17:00</option><option>18:00</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Комментарий</label>
+        <textarea placeholder="Пожелания к дизайну или другие вопросы..."></textarea>
+      </div>
+      <button class="form-submit" onclick="alert('Заявка отправлена! Мастер свяжется с вами для подтверждения.')">Отправить заявку</button>
+      <p class="form-note">Также можно записаться через Telegram-бот — быстро и удобно</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Anna <span>Nails</span></div>
+    <div class="footer-sub">Мастер маникюра · Москва · @anna_nails</div>
+  </div>
+</footer>
+
+</body>
+</html>
