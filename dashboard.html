@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Панель мастера</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --rose:#C8726A;--rose-light:#F5E8E6;--rose-dark:#8B4A44;
+  --cream:#FAF7F4;--dark:#1A1614;--mid:#6B5E5A;--light:#F0EBE8;
+  --font-serif:'Cormorant Garamond',serif;--font-sans:'Jost',sans-serif;
+  --green:#4A9B6F;--green-light:#E8F5EE;
+  --orange:#E07A3A;--orange-light:#FDF0E6;
+}
+body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-height:100vh}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+.login-box{background:#fff;border-radius:1.5rem;padding:2.5rem;width:100%;max-width:400px;border:0.5px solid rgba(200,114,106,0.15);text-align:center}
+.login-logo{font-family:var(--font-serif);font-size:2rem;font-weight:300;margin-bottom:0.25rem}
+.login-logo span{color:var(--rose);font-style:italic}
+.login-sub{font-size:0.8rem;color:var(--mid);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2rem}
+.login-box input{width:100%;padding:0.75rem 1rem;border:0.5px solid #DDD0CE;border-radius:0.75rem;font-family:var(--font-sans);font-size:0.9rem;color:var(--dark);background:#fff;outline:none;margin-bottom:1rem;transition:border-color 0.2s}
+.login-box input:focus{border-color:var(--rose)}
+.login-btn{width:100%;background:var(--rose);color:#fff;padding:0.85rem;border-radius:3rem;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;border:none;cursor:pointer;font-family:var(--font-sans);transition:background 0.2s}
+.login-btn:hover{background:var(--rose-dark)}
+.login-error{color:#E24B4A;font-size:0.8rem;margin-top:0.5rem;display:none}
+
+/* LAYOUT */
+#app{display:none;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:#fff;border-right:0.5px solid rgba(200,114,106,0.12);padding:1.5rem 1rem;display:flex;flex-direction:column}
+.sidebar-logo{font-family:var(--font-serif);font-size:1.3rem;font-weight:300;margin-bottom:0.25rem;padding:0 0.5rem}
+.sidebar-logo span{color:var(--rose);font-style:italic}
+.sidebar-master{font-size:0.75rem;color:var(--mid);padding:0 0.5rem;margin-bottom:1.5rem}
+.nav-item{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.75rem;border-radius:0.75rem;cursor:pointer;font-size:0.85rem;color:var(--mid);transition:all 0.15s;margin-bottom:0.25rem;border:none;background:none;width:100%;text-align:left;font-family:var(--font-sans)}
+.nav-item:hover{background:var(--rose-light);color:var(--rose)}
+.nav-item.active{background:var(--rose-light);color:var(--rose);font-weight:500}
+.nav-icon{font-size:1rem;width:20px;text-align:center}
+.sidebar-bottom{margin-top:auto}
+.logout-btn{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.75rem;border-radius:0.75rem;cursor:pointer;font-size:0.85rem;color:var(--mid);border:none;background:none;width:100%;font-family:var(--font-sans)}
+.logout-btn:hover{color:#E24B4A}
+
+.main{margin-left:220px;padding:2rem;min-height:100vh}
+.page{display:none}
+.page.active{display:block}
+.page-title{font-family:var(--font-serif);font-size:2rem;font-weight:300;margin-bottom:0.25rem}
+.page-title em{color:var(--rose);font-style:italic}
+.page-sub{font-size:0.82rem;color:var(--mid);margin-bottom:2rem}
+
+/* CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.stat-card{background:#fff;border-radius:1rem;padding:1.25rem;border:0.5px solid rgba(200,114,106,0.1)}
+.stat-card .num{font-family:var(--font-serif);font-size:2.2rem;color:var(--rose);font-weight:300}
+.stat-card .lbl{font-size:0.75rem;color:var(--mid);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.25rem}
+
+/* BOOKINGS */
+.bookings-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.date-nav{display:flex;align-items:center;gap:1rem}
+.date-nav button{background:none;border:0.5px solid rgba(200,114,106,0.3);border-radius:0.5rem;padding:0.4rem 0.75rem;cursor:pointer;font-size:0.85rem;color:var(--mid);font-family:var(--font-sans);transition:all 0.15s}
+.date-nav button:hover{border-color:var(--rose);color:var(--rose)}
+.date-nav .current-date{font-family:var(--font-serif);font-size:1.2rem}
+.btn{background:var(--rose);color:#fff;padding:0.6rem 1.25rem;border-radius:2rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;border:none;cursor:pointer;font-family:var(--font-sans);transition:background 0.2s}
+.btn:hover{background:var(--rose-dark)}
+.btn-outline{background:none;color:var(--rose);border:0.5px solid var(--rose);padding:0.6rem 1.25rem;border-radius:2rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:var(--font-sans);transition:all 0.2s}
+.btn-outline:hover{background:var(--rose);color:#fff}
+
+.bookings-list{display:flex;flex-direction:column;gap:0.75rem}
+.booking-item{background:#fff;border-radius:1rem;padding:1.25rem 1.5rem;border:0.5px solid rgba(200,114,106,0.1);display:grid;grid-template-columns:80px 1fr auto auto;align-items:center;gap:1rem}
+.booking-time{font-family:var(--font-serif);font-size:1.3rem;color:var(--rose)}
+.booking-info h4{font-size:0.9rem;font-weight:500;margin-bottom:0.2rem}
+.booking-info p{font-size:0.8rem;color:var(--mid)}
+.status-badge{padding:0.3rem 0.75rem;border-radius:2rem;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;font-weight:500}
+.status-pending{background:var(--orange-light);color:var(--orange)}
+.status-confirmed{background:var(--green-light);color:var(--green)}
+.status-cancelled{background:#FEF2F2;color:#E24B4A}
+.booking-actions{display:flex;gap:0.5rem}
+.action-btn{padding:0.35rem 0.75rem;border-radius:0.5rem;font-size:0.75rem;border:0.5px solid rgba(200,114,106,0.2);background:none;cursor:pointer;font-family:var(--font-sans);color:var(--mid);transition:all 0.15s}
+.action-btn:hover{border-color:var(--rose);color:var(--rose)}
+.action-btn.danger:hover{border-color:#E24B4A;color:#E24B4A}
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--mid)}
+.empty-state .emoji{font-size:3rem;margin-bottom:1rem}
+.empty-state p{font-size:0.9rem}
+
+/* SERVICES */
+.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-top:1rem}
+.service-item{background:#fff;border-radius:1rem;padding:1.25rem;border:0.5px solid rgba(200,114,106,0.1)}
+.service-item h4{font-size:0.95rem;font-weight:500;margin-bottom:0.5rem}
+.service-meta{display:flex;gap:1rem;font-size:0.8rem;color:var(--mid)}
+.service-price-tag{color:var(--rose);font-weight:500}
+.service-item-actions{display:flex;gap:0.5rem;margin-top:0.75rem}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:1.5rem;padding:2rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal h3{font-family:var(--font-serif);font-size:1.5rem;font-weight:300;margin-bottom:1.5rem}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.4rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:0.7rem 1rem;border:0.5px solid #DDD0CE;border-radius:0.75rem;font-family:var(--font-sans);font-size:0.9rem;color:var(--dark);background:#fff;outline:none;transition:border-color 0.2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--rose)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.modal-actions{display:flex;gap:0.75rem;margin-top:1.5rem;justify-content:flex-end}
+
+/* SCHEDULE */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0.5rem;margin-top:1rem}
+.day-col{background:#fff;border-radius:1rem;padding:1rem;border:0.5px solid rgba(200,114,106,0.1);min-height:200px}
+.day-col.day-off{background:#FEF2F2;border-color:#FECACA}
+.day-header{font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.5rem}
+.day-date{font-family:var(--font-serif);font-size:1.5rem;color:var(--dark);margin-bottom:0.75rem}
+.day-date.today{color:var(--rose)}
+.day-slot{background:var(--rose-light);border-radius:0.5rem;padding:0.4rem 0.6rem;font-size:0.72rem;margin-bottom:0.35rem;cursor:pointer}
+.day-slot:hover{background:#EDD5D2}
+
+.loading{text-align:center;padding:3rem;color:var(--mid);font-size:0.9rem}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Nail <span>Dashboard</span></div>
+    <div class="login-sub">Панель управления мастера</div>
+    <input type="email" id="login-email" placeholder="Email">
+    <input type="password" id="login-password" placeholder="Пароль">
+    <button class="login-btn" onclick="login()">Войти</button>
+    <div class="login-error" id="login-error">Неверный email или пароль</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">Nail <span>Panel</span></div>
+    <div class="sidebar-master" id="master-name">Загрузка...</div>
+    <button class="nav-item active" onclick="showPage('bookings', this)">
+      <span class="nav-icon">📅</span> Записи
+    </button>
+    <button class="nav-item" onclick="showPage('schedule', this)">
+      <span class="nav-icon">🗓</span> Расписание
+    </button>
+    <button class="nav-item" onclick="showPage('services', this)">
+      <span class="nav-icon">💅</span> Услуги
+    </button>
+    <div class="sidebar-bottom">
+      <button class="logout-btn" onclick="logout()">
+        <span class="nav-icon">👋</span> Выйти
+      </button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- ЗАПИСИ -->
+    <div class="page active" id="page-bookings">
+      <div class="page-title">Записи на <em>сегодня</em></div>
+      <div class="page-sub" id="today-date"></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="num" id="stat-today">0</div><div class="lbl">Сегодня</div></div>
+        <div class="stat-card"><div class="num" id="stat-week">0</div><div class="lbl">На неделе</div></div>
+        <div class="stat-card"><div class="num" id="stat-pending">0</div><div class="lbl">Ожидают</div></div>
+        <div class="stat-card"><div class="num" id="stat-revenue">0</div><div class="lbl">Выручка сегодня</div></div>
+      </div>
+      <div class="bookings-header">
+        <div class="date-nav">
+          <button onclick="changeDay(-1)">←</button>
+          <span class="current-date" id="nav-date"></span>
+          <button onclick="changeDay(1)">→</button>
+        </div>
+        <button class="btn" onclick="openAddBooking()">+ Добавить запись</button>
+      </div>
+      <div class="bookings-list" id="bookings-list">
+        <div class="loading">Загрузка записей...</div>
+      </div>
+    </div>
+
+    <!-- РАСПИСАНИЕ -->
+    <div class="page" id="page-schedule">
+      <div class="page-title"><em>Расписание</em> на неделю</div>
+      <div class="page-sub">Управляйте рабочими днями и часами</div>
+      <div class="week-grid" id="week-grid">
+        <div class="loading">Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- УСЛУГИ -->
+    <div class="page" id="page-services">
+      <div class="page-title">Мои <em>услуги</em></div>
+      <div class="page-sub">Настройте прайс и длительность каждой услуги</div>
+      <div style="margin-bottom:1rem">
+        <button class="btn" onclick="openAddService()">+ Добавить услугу</button>
+      </div>
+      <div class="services-grid" id="services-list">
+        <div class="loading">Загрузка...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Добавить запись -->
+<div class="modal-overlay" id="modal-booking">
+  <div class="modal">
+    <h3>Новая запись</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Имя клиента</label>
+        <input type="text" id="b-name" placeholder="Имя">
+      </div>
+      <div class="form-group">
+        <label>Телефон</label>
+        <input type="tel" id="b-phone" placeholder="+7 (___) ___-__-__">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Услуга</label>
+      <select id="b-service"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Дата</label>
+        <input type="date" id="b-date">
+      </div>
+      <div class="form-group">
+        <label>Время начала</label>
+        <input type="time" id="b-time">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Комментарий</label>
+      <input type="text" id="b-comment" placeholder="Пожелания...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-booking')">Отмена</button>
+      <button class="btn" onclick="saveBooking()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Добавить услугу -->
+<div class="modal-overlay" id="modal-service">
+  <div class="modal">
+    <h3>Новая услуга</h3>
+    <div class="form-group">
+      <label>Название</label>
+      <input type="text" id="s-name" placeholder="Маникюр с покрытием">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Цена (₽)</label>
+        <input type="number" id="s-price" placeholder="1500">
+      </div>
+      <div class="form-group">
+        <label>Длительность (мин)</label>
+        <input type="number" id="s-duration" placeholder="60">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-service')">Отмена</button>
+      <button class="btn" onclick="saveService()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://xxaidbvmmaplcpdemzek.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_CF-2UO_YzpYZx8igekMgFw_0yKFzh0l';
+
+let currentMaster = null;
+let currentDate = new Date();
+let services = [];
+
+async function supabase(method, table, body = null, query = '') {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    },
+    body: body ? JSON.stringify(body) : null
+  });
+  if (!res.ok) return null;
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return;
+
+  const data = await supabase('GET', 'masters', null, `?email=eq.${encodeURIComponent(email)}&password=eq.${encodeURIComponent(password)}&select=*`);
+
+  if (data && data.length > 0) {
+    currentMaster = data[0];
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('master-name').textContent = currentMaster.name;
+    initApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function logout() {
+  currentMaster = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'bookings') loadBookings();
+  if (name === 'services') loadServices();
+  if (name === 'schedule') loadSchedule();
+}
+
+function formatDate(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function formatDateRu(d) {
+  const days = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+function changeDay(n) {
+  currentDate.setDate(currentDate.getDate() + n);
+  document.getElementById('nav-date').textContent = formatDateRu(currentDate);
+  loadBookings();
+}
+
+async function initApp() {
+  const today = new Date();
+  document.getElementById('today-date').textContent = formatDateRu(today);
+  document.getElementById('nav-date').textContent = formatDateRu(currentDate);
+  await loadServices();
+  await loadBookings();
+  await loadStats();
+}
+
+async function loadStats() {
+  const today = formatDate(new Date());
+  const weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate() + 7);
+
+  const todayB = await supabase('GET', 'bookings', null,
+    `?master_id=eq.${currentMaster.id}&booking_date=eq.${today}&status=neq.cancelled&select=*,services(price)`);
+  const weekB = await supabase('GET', 'bookings', null,
+    `?master_id=eq.${currentMaster.id}&booking_date=gte.${today}&booking_date=lte.${formatDate(weekEnd)}&status=neq.cancelled`);
+  const pendingB = await supabase('GET', 'bookings', null,
+    `?master_id=eq.${currentMaster.id}&status=eq.pending`);
+
+  document.getElementById('stat-today').textContent = todayB ? todayB.length : 0;
+  document.getElementById('stat-week').textContent = weekB ? weekB.length : 0;
+  document.getElementById('stat-pending').textContent = pendingB ? pendingB.length : 0;
+
+  const revenue = todayB ? todayB.reduce((sum, b) => sum + (b.services?.price || 0), 0) : 0;
+  document.getElementById('stat-revenue').textContent = revenue.toLocaleString() + ' ₽';
+}
+
+async function loadBookings() {
+  const dateStr = formatDate(currentDate);
+  const list = document.getElementById('bookings-list');
+  list.innerHTML = '<div class="loading">Загрузка...</div>';
+
+  const data = await supabase('GET', 'bookings', null,
+    `?master_id=eq.${currentMaster.id}&booking_date=eq.${dateStr}&order=start_time.asc&select=*,services(name,price)`);
+
+  if (!data || data.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="emoji">📭</div><p>Нет записей на этот день</p></div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(b => `
+    <div class="booking-item">
+      <div class="booking-time">${b.start_time.slice(0,5)}</div>
+      <div class="booking-info">
+        <h4>${b.client_name}</h4>
+        <p>${b.services?.name || '—'} · ${b.client_phone}</p>
+        ${b.comment ? `<p style="color:var(--mid);font-size:0.75rem">${b.comment}</p>` : ''}
+      </div>
+      <div>
+        <span class="status-badge status-${b.status}">${b.status === 'pending' ? 'Ожидает' : b.status === 'confirmed' ? 'Подтверждено' : 'Отменено'}</span>
+      </div>
+      <div class="booking-actions">
+        ${b.status === 'pending' ? `<button class="action-btn" onclick="updateStatus('${b.id}','confirmed')">✓</button>` : ''}
+        <button class="action-btn danger" onclick="updateStatus('${b.id}','cancelled')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function updateStatus(id, status) {
+  await supabase('PATCH', `bookings?id=eq.${id}`, { status });
+  loadBookings();
+  loadStats();
+}
+
+async function loadServices() {
+  const list = document.getElementById('services-list');
+  list.innerHTML = '<div class="loading">Загрузка...</div>';
+
+  const data = await supabase('GET', 'services', null,
+    `?master_id=eq.${currentMaster.id}&order=name.asc`);
+
+  services = data || [];
+
+  const select = document.getElementById('b-service');
+  select.innerHTML = services.map(s => `<option value="${s.id}">${s.name} — ${s.price} ₽ (${s.duration} мин)</option>`).join('');
+
+  if (!data || data.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="emoji">💅</div><p>Добавьте первую услугу</p></div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(s => `
+    <div class="service-item">
+      <h4>${s.name}</h4>
+      <div class="service-meta">
+        <span class="service-price-tag">${s.price.toLocaleString()} ₽</span>
+        <span>⏱ ${s.duration} мин</span>
+      </div>
+      <div class="service-item-actions">
+        <button class="action-btn danger" onclick="deleteService('${s.id}')">Удалить</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function deleteService(id) {
+  if (!confirm('Удалить услугу?')) return;
+  await supabase('DELETE', `services?id=eq.${id}`);
+  loadServices();
+}
+
+async function loadSchedule() {
+  const grid = document.getElementById('week-grid');
+  const days = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const today = new Date();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (today.getDay() || 7) + 1);
+
+  const weekDates = Array.from({length:7}, (_,i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+
+  const bookingData = await supabase('GET', 'bookings', null,
+    `?master_id=eq.${currentMaster.id}&booking_date=gte.${formatDate(weekDates[0])}&booking_date=lte.${formatDate(weekDates[6])}&status=neq.cancelled&select=*,services(name)&order=start_time.asc`);
+
+  grid.innerHTML = weekDates.map((d, i) => {
+    const dateStr = formatDate(d);
+    const isToday = formatDate(d) === formatDate(today);
+    const dayBookings = (bookingData || []).filter(b => b.booking_date === dateStr);
+
+    return `
+      <div class="day-col">
+        <div class="day-header">${days[i]}</div>
+        <div class="day-date ${isToday ? 'today' : ''}">${d.getDate()}</div>
+        ${dayBookings.length === 0
+          ? '<div style="font-size:0.75rem;color:var(--mid)">Нет записей</div>'
+          : dayBookings.map(b => `
+            <div class="day-slot">
+              <strong>${b.start_time.slice(0,5)}</strong> ${b.client_name}<br>
+              <span style="color:var(--mid)">${b.services?.name || ''}</span>
+            </div>
+          `).join('')
+        }
+      </div>
+    `;
+  }).join('');
+}
+
+function openAddBooking() {
+  document.getElementById('b-date').value = formatDate(currentDate);
+  document.getElementById('modal-booking').classList.add('open');
+}
+
+function openAddService() {
+  document.getElementById('modal-service').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+async function saveBooking() {
+  const serviceId = document.getElementById('b-service').value;
+  const service = services.find(s => s.id === serviceId);
+  const startTime = document.getElementById('b-time').value;
+
+  if (!document.getElementById('b-name').value || !startTime || !serviceId) {
+    alert('Заполните все обязательные поля');
+    return;
+  }
+
+  const [h, m] = startTime.split(':').map(Number);
+  const endMinutes = h * 60 + m + (service?.duration || 60);
+  const endTime = `${String(Math.floor(endMinutes/60)).padStart(2,'0')}:${String(endMinutes%60).padStart(2,'0')}`;
+
+  await supabase('POST', 'bookings', {
+    master_id: currentMaster.id,
+    service_id: serviceId,
+    client_name: document.getElementById('b-name').value,
+    client_phone: document.getElementById('b-phone').value,
+    booking_date: document.getElementById('b-date').value,
+    start_time: startTime,
+    end_time: endTime,
+    comment: document.getElementById('b-comment').value,
+    status: 'confirmed'
+  });
+
+  closeModal('modal-booking');
+  loadBookings();
+  loadStats();
+}
+
+async function saveService() {
+  const name = document.getElementById('s-name').value;
+  const price = parseInt(document.getElementById('s-price').value);
+  const duration = parseInt(document.getElementById('s-duration').value);
+
+  if (!name || !price || !duration) {
+    alert('Заполните все поля');
+    return;
+  }
+
+  await supabase('POST', 'services', {
+    master_id: currentMaster.id,
+    name, price, duration
+  });
+
+  closeModal('modal-service');
+  loadServices();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+</script>
+</body>
+</html>
