@@ -15,7 +15,6 @@
   --orange:#E07A3A;--orange-light:#FDF0E6;
 }
 body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-height:100vh;font-size:17px}
- 
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
 .login-box{background:#fff;border-radius:1.5rem;padding:2.5rem;width:100%;max-width:420px;border:0.5px solid rgba(200,114,106,0.15);text-align:center}
 .login-logo{font-family:var(--font-serif);font-size:2.4rem;font-weight:300;margin-bottom:0.25rem}
@@ -26,9 +25,8 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .login-btn{width:100%;background:var(--rose);color:#fff;padding:0.9rem;border-radius:3rem;font-size:0.95rem;letter-spacing:0.1em;text-transform:uppercase;border:none;cursor:pointer;font-family:var(--font-sans);transition:background 0.2s}
 .login-btn:hover{background:var(--rose-dark)}
 .login-error{color:#E24B4A;font-size:0.9rem;margin-top:0.5rem;display:none}
- 
 #app{display:none;min-height:100vh}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:#fff;border-right:0.5px solid rgba(200,114,106,0.12);padding:1.5rem 1rem;display:flex;flex-direction:column}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:#fff;border-right:0.5px solid rgba(200,114,106,0.12);padding:1.5rem 1rem;display:flex;flex-direction:column;overflow-y:auto}
 .sidebar-logo{font-family:var(--font-serif);font-size:1.5rem;font-weight:300;margin-bottom:0.25rem;padding:0 0.5rem}
 .sidebar-logo span{color:var(--rose);font-style:italic}
 .sidebar-master{font-size:0.85rem;color:var(--mid);padding:0 0.5rem;margin-bottom:1.5rem}
@@ -36,22 +34,19 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .nav-item:hover{background:var(--rose-light);color:var(--rose)}
 .nav-item.active{background:var(--rose-light);color:var(--rose);font-weight:500}
 .nav-icon{font-size:1.1rem;width:22px;text-align:center}
-.sidebar-bottom{margin-top:auto}
+.sidebar-bottom{margin-top:auto;padding-top:1rem}
 .logout-btn{display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0.85rem;border-radius:0.75rem;cursor:pointer;font-size:0.9rem;color:var(--mid);border:none;background:none;width:100%;font-family:var(--font-sans)}
 .logout-btn:hover{color:#E24B4A}
- 
 .main{margin-left:240px;padding:2.5rem;min-height:100vh}
 .page{display:none}
 .page.active{display:block}
 .page-title{font-family:var(--font-serif);font-size:2.4rem;font-weight:300;margin-bottom:0.25rem}
 .page-title em{color:var(--rose);font-style:italic}
 .page-sub{font-size:0.9rem;color:var(--mid);margin-bottom:2rem}
- 
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
 .stat-card{background:#fff;border-radius:1rem;padding:1.4rem;border:0.5px solid rgba(200,114,106,0.1)}
 .stat-card .num{font-family:var(--font-serif);font-size:2.6rem;color:var(--rose);font-weight:300}
 .stat-card .lbl{font-size:0.82rem;color:var(--mid);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.25rem}
- 
 .bookings-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
 .date-nav{display:flex;align-items:center;gap:1rem}
 .date-nav button{background:none;border:0.5px solid rgba(200,114,106,0.3);border-radius:0.5rem;padding:0.45rem 0.85rem;cursor:pointer;font-size:0.95rem;color:var(--mid);font-family:var(--font-sans);transition:all 0.15s}
@@ -61,10 +56,11 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .btn:hover{background:var(--rose-dark)}
 .btn-outline{background:none;color:var(--rose);border:0.5px solid var(--rose);padding:0.65rem 1.4rem;border-radius:2rem;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:var(--font-sans);transition:all 0.2s}
 .btn-outline:hover{background:var(--rose);color:#fff}
- 
+.btn-sm{padding:0.4rem 0.85rem;font-size:0.82rem;border-radius:1.5rem}
 .bookings-list{display:flex;flex-direction:column;gap:0.75rem}
 .booking-item{background:#fff;border-radius:1rem;padding:1.35rem 1.6rem;border:0.5px solid rgba(200,114,106,0.1);display:grid;grid-template-columns:90px 1fr auto auto;align-items:center;gap:1rem}
 .booking-item.past{opacity:0.5;background:#F9F9F9}
+.booking-item.blacklisted{border-color:#E24B4A;background:#FFF5F5}
 .booking-time{font-family:var(--font-serif);font-size:1.5rem;color:var(--rose)}
 .booking-info h4{font-size:1rem;font-weight:500;margin-bottom:0.2rem}
 .booking-info p{font-size:0.88rem;color:var(--mid)}
@@ -73,21 +69,19 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .status-confirmed{background:var(--green-light);color:var(--green)}
 .status-cancelled{background:#FEF2F2;color:#E24B4A}
 .status-past{background:#F0EBE8;color:var(--mid)}
-.booking-actions{display:flex;gap:0.5rem}
+.booking-actions{display:flex;gap:0.5rem;flex-wrap:wrap}
 .action-btn{padding:0.4rem 0.85rem;border-radius:0.5rem;font-size:0.82rem;border:0.5px solid rgba(200,114,106,0.2);background:none;cursor:pointer;font-family:var(--font-sans);color:var(--mid);transition:all 0.15s}
 .action-btn:hover{border-color:var(--rose);color:var(--rose)}
 .action-btn.danger:hover{border-color:#E24B4A;color:#E24B4A}
 .empty-state{text-align:center;padding:4rem 2rem;color:var(--mid)}
 .empty-state .emoji{font-size:3rem;margin-bottom:1rem}
 .empty-state p{font-size:1rem}
- 
 .services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1rem}
 .service-item{background:#fff;border-radius:1rem;padding:1.4rem;border:0.5px solid rgba(200,114,106,0.1)}
 .service-item h4{font-size:1.05rem;font-weight:500;margin-bottom:0.5rem}
 .service-meta{display:flex;gap:1rem;font-size:0.88rem;color:var(--mid)}
 .service-price-tag{color:var(--rose);font-weight:500}
 .service-item-actions{display:flex;gap:0.5rem;margin-top:0.85rem}
- 
 .schedule-controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
 .view-tabs{display:flex;gap:0.5rem}
 .view-tab{padding:0.55rem 1.1rem;border-radius:2rem;font-size:0.9rem;border:0.5px solid rgba(200,114,106,0.3);background:none;cursor:pointer;font-family:var(--font-sans);color:var(--mid);transition:all 0.15s}
@@ -98,7 +92,6 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .schedule-nav .nav-label{font-family:var(--font-serif);font-size:1.2rem;min-width:220px;text-align:center}
 .today-btn{padding:0.45rem 1.1rem;border-radius:2rem;font-size:0.85rem;border:0.5px solid rgba(200,114,106,0.3);background:none;cursor:pointer;font-family:var(--font-sans);color:var(--mid);transition:all 0.15s}
 .today-btn:hover{border-color:var(--rose);color:var(--rose)}
- 
 .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0.5rem}
 .day-col{background:#fff;border-radius:1rem;padding:1rem;border:0.5px solid rgba(200,114,106,0.1);min-height:160px}
 .day-col.is-today{border-color:var(--rose)}
@@ -111,7 +104,6 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .day-slot:hover{background:#EDD5D2}
 .day-slot strong{display:block}
 .past-label{font-size:0.72rem;color:var(--mid);font-style:italic}
- 
 .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0.4rem}
 .month-header-cell{font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);text-align:center;padding:0.5rem 0}
 .month-day{background:#fff;border-radius:0.75rem;padding:0.65rem;border:0.5px solid rgba(200,114,106,0.08);min-height:84px;cursor:pointer;transition:border-color 0.15s}
@@ -121,33 +113,79 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .month-day.is-past{opacity:0.5}
 .month-day .day-num{font-size:0.95rem;font-weight:500;margin-bottom:0.3rem}
 .month-day.is-today .day-num{color:var(--rose)}
-.month-day.is-past .day-num{color:var(--mid)}
 .month-dot{width:7px;height:7px;background:var(--rose);border-radius:50%;display:inline-block;margin:1px}
 .month-dot.past-dot{background:var(--mid)}
- 
 .day-view-card{background:#fff;border-radius:1rem;padding:1.75rem;border:0.5px solid rgba(200,114,106,0.1)}
-.day-view-title{font-family:var(--font-serif);font-size:1.5rem;margin-bottom:1rem;color:var(--dark)}
+.day-view-title{font-family:var(--font-serif);font-size:1.5rem;margin-bottom:1rem}
 .day-view-slot{display:flex;gap:1rem;align-items:flex-start;padding:0.85rem 0;border-bottom:0.5px solid rgba(200,114,106,0.08)}
 .day-view-time{font-size:0.9rem;color:var(--mid);min-width:60px;padding-top:2px;line-height:1.6}
 .day-view-booking{background:var(--rose-light);border-radius:0.5rem;padding:0.6rem 0.85rem;flex:1;font-size:0.9rem}
 .day-view-booking strong{display:block;margin-bottom:0.2rem;font-size:1rem}
 .day-view-booking.past-booking{background:#F0EBE8;opacity:0.7}
- 
+
+/* WORK HOURS */
+.work-hours-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-top:1rem}
+.work-day-card{background:#fff;border-radius:1rem;padding:1.4rem;border:0.5px solid rgba(200,114,106,0.1)}
+.work-day-card h4{font-size:1rem;font-weight:500;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#DDD0CE;border-radius:12px;transition:0.2s}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.2s}
+.toggle-switch input:checked+.toggle-slider{background:var(--rose)}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}
+.time-row{display:flex;gap:0.75rem;align-items:center;font-size:0.88rem;color:var(--mid)}
+.time-row input[type=time]{padding:0.4rem 0.6rem;border:0.5px solid #DDD0CE;border-radius:0.5rem;font-family:var(--font-sans);font-size:0.88rem;color:var(--dark);outline:none}
+.time-row input[type=time]:focus{border-color:var(--rose)}
+
+/* STATS */
+.stats-section{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
+.stats-big-card{background:#fff;border-radius:1rem;padding:1.6rem;border:0.5px solid rgba(200,114,106,0.1)}
+.stats-big-card .num{font-family:var(--font-serif);font-size:3rem;color:var(--rose);font-weight:300}
+.stats-big-card .lbl{font-size:0.82rem;color:var(--mid);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.25rem}
+.chart-bar-wrap{margin-top:1.5rem}
+.chart-bar-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.6rem}
+.chart-bar-label{font-size:0.82rem;color:var(--mid);width:100px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chart-bar{height:20px;background:var(--rose-light);border-radius:0.5rem;position:relative;flex:1}
+.chart-bar-fill{height:100%;background:var(--rose);border-radius:0.5rem;transition:width 0.5s}
+.chart-bar-val{font-size:0.78rem;color:var(--mid);width:60px}
+
+/* BLACKLIST */
+.blacklist-grid{display:flex;flex-direction:column;gap:0.75rem;margin-top:1rem}
+.blacklist-item{background:#fff;border-radius:1rem;padding:1.25rem 1.5rem;border:0.5px solid rgba(226,75,74,0.2);display:flex;justify-content:space-between;align-items:center}
+.blacklist-info h4{font-size:0.95rem;font-weight:500;margin-bottom:0.2rem}
+.blacklist-info p{font-size:0.85rem;color:var(--mid)}
+.blacklist-reason{font-size:0.8rem;color:#E24B4A;margin-top:0.25rem}
+
+/* CLIENT HISTORY */
+.history-search{display:flex;gap:1rem;margin-bottom:1.5rem}
+.history-search input{flex:1;padding:0.75rem 1.1rem;border:0.5px solid #DDD0CE;border-radius:0.75rem;font-family:var(--font-sans);font-size:0.95rem;color:var(--dark);outline:none}
+.history-search input:focus{border-color:var(--rose)}
+.client-card{background:#fff;border-radius:1rem;padding:1.4rem;border:0.5px solid rgba(200,114,106,0.1);margin-bottom:1rem}
+.client-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem}
+.client-card-name{font-size:1.1rem;font-weight:500}
+.client-card-phone{font-size:0.88rem;color:var(--mid)}
+.client-visits{display:flex;flex-direction:column;gap:0.5rem}
+.visit-row{display:flex;gap:1rem;font-size:0.88rem;padding:0.5rem 0;border-bottom:0.5px solid rgba(200,114,106,0.08)}
+.visit-date{color:var(--mid);min-width:100px}
+.visit-service{flex:1}
+.visit-price{color:var(--rose);font-weight:500}
+
+/* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:#fff;border-radius:1.5rem;padding:2.25rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
 .modal h3{font-family:var(--font-serif);font-size:1.7rem;font-weight:300;margin-bottom:1.5rem}
 .form-group{margin-bottom:1rem}
 .form-group label{display:block;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.4rem}
-.form-group input,.form-group select{width:100%;padding:0.8rem 1.1rem;border:0.5px solid #DDD0CE;border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:#fff;outline:none;transition:border-color 0.2s}
-.form-group input:focus,.form-group select:focus{border-color:var(--rose)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:0.8rem 1.1rem;border:0.5px solid #DDD0CE;border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:#fff;outline:none;transition:border-color 0.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--rose)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .modal-actions{display:flex;gap:0.75rem;margin-top:1.5rem;justify-content:flex-end}
 .loading{text-align:center;padding:3rem;color:var(--mid);font-size:1rem}
 </style>
 </head>
 <body>
- 
+
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">Nail <span>Dashboard</span></div>
@@ -158,7 +196,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     <div class="login-error" id="login-error">Неверный email или пароль</div>
   </div>
 </div>
- 
+
 <div id="app">
   <div class="sidebar">
     <div class="sidebar-logo">Nail <span>Panel</span></div>
@@ -166,12 +204,18 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     <button class="nav-item active" onclick="showPage('bookings',this)"><span class="nav-icon">📅</span> Записи</button>
     <button class="nav-item" onclick="showPage('schedule',this)"><span class="nav-icon">🗓</span> Расписание</button>
     <button class="nav-item" onclick="showPage('services',this)"><span class="nav-icon">💅</span> Услуги</button>
+    <button class="nav-item" onclick="showPage('workhours',this)"><span class="nav-icon">🕐</span> Рабочие часы</button>
+    <button class="nav-item" onclick="showPage('history',this)"><span class="nav-icon">👤</span> Клиенты</button>
+    <button class="nav-item" onclick="showPage('stats',this)"><span class="nav-icon">📊</span> Статистика</button>
+    <button class="nav-item" onclick="showPage('blacklist',this)"><span class="nav-icon">🚫</span> Чёрный список</button>
     <div class="sidebar-bottom">
       <button class="logout-btn" onclick="logout()"><span class="nav-icon">👋</span> Выйти</button>
     </div>
   </div>
- 
+
   <div class="main">
+
+    <!-- ЗАПИСИ -->
     <div class="page active" id="page-bookings">
       <div class="page-title">Записи на <em>день</em></div>
       <div class="page-sub" id="today-date"></div>
@@ -191,10 +235,11 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
       </div>
       <div class="bookings-list" id="bookings-list"><div class="loading">Загрузка...</div></div>
     </div>
- 
+
+    <!-- РАСПИСАНИЕ -->
     <div class="page" id="page-schedule">
       <div class="page-title"><em>Расписание</em></div>
-      <div class="page-sub">День, неделя или месяц — выбирайте удобный вид</div>
+      <div class="page-sub">День, неделя или месяц</div>
       <div class="schedule-controls">
         <div class="view-tabs">
           <button class="view-tab" onclick="setView('day',this)">День</button>
@@ -210,16 +255,60 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
       </div>
       <div id="sched-content"></div>
     </div>
- 
+
+    <!-- УСЛУГИ -->
     <div class="page" id="page-services">
       <div class="page-title">Мои <em>услуги</em></div>
-      <div class="page-sub">Настройте прайс и длительность</div>
+      <div class="page-sub">Добавляйте, редактируйте и удаляйте услуги</div>
       <div style="margin-bottom:1rem"><button class="btn" onclick="openAddService()">+ Добавить услугу</button></div>
       <div class="services-grid" id="services-list"><div class="loading">Загрузка...</div></div>
     </div>
+
+    <!-- РАБОЧИЕ ЧАСЫ -->
+    <div class="page" id="page-workhours">
+      <div class="page-title">Рабочие <em>часы</em></div>
+      <div class="page-sub">Настройте расписание по дням недели</div>
+      <div style="margin-bottom:1.5rem"><button class="btn" onclick="saveWorkHours()">Сохранить изменения</button></div>
+      <div class="work-hours-grid" id="work-hours-grid"><div class="loading">Загрузка...</div></div>
+    </div>
+
+    <!-- КЛИЕНТЫ -->
+    <div class="page" id="page-history">
+      <div class="page-title"><em>Клиенты</em></div>
+      <div class="page-sub">История визитов по клиентам</div>
+      <div class="history-search">
+        <input type="text" id="client-search" placeholder="Поиск по имени или телефону..." oninput="filterClients()">
+      </div>
+      <div id="clients-list"><div class="loading">Загрузка...</div></div>
+    </div>
+
+    <!-- СТАТИСТИКА -->
+    <div class="page" id="page-stats">
+      <div class="page-title"><em>Статистика</em></div>
+      <div class="page-sub">Выручка и популярные услуги</div>
+      <div class="stats-section">
+        <div class="stats-big-card"><div class="num" id="s-month">0 ₽</div><div class="lbl">Выручка за месяц</div></div>
+        <div class="stats-big-card"><div class="num" id="s-total">0</div><div class="lbl">Всего записей</div></div>
+        <div class="stats-big-card"><div class="num" id="s-clients">0</div><div class="lbl">Уникальных клиентов</div></div>
+      </div>
+      <div style="background:#fff;border-radius:1rem;padding:1.6rem;border:0.5px solid rgba(200,114,106,0.1)">
+        <div style="font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:1rem">Популярные услуги</div>
+        <div class="chart-bar-wrap" id="services-chart"><div class="loading">Загрузка...</div></div>
+      </div>
+    </div>
+
+    <!-- ЧЁРНЫЙ СПИСОК -->
+    <div class="page" id="page-blacklist">
+      <div class="page-title">Чёрный <em>список</em></div>
+      <div class="page-sub">Клиенты которым отказано в записи</div>
+      <div style="margin-bottom:1rem"><button class="btn" onclick="openAddBlacklist()">+ Добавить</button></div>
+      <div class="blacklist-grid" id="blacklist-list"><div class="loading">Загрузка...</div></div>
+    </div>
+
   </div>
 </div>
- 
+
+<!-- MODAL: Добавить запись -->
 <div class="modal-overlay" id="modal-booking">
   <div class="modal">
     <h3>Новая запись</h3>
@@ -239,10 +328,29 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     </div>
   </div>
 </div>
- 
+
+<!-- MODAL: Перенос записи -->
+<div class="modal-overlay" id="modal-reschedule">
+  <div class="modal">
+    <h3>Перенос записи</h3>
+    <input type="hidden" id="r-booking-id">
+    <div class="form-group"><label>Клиент</label><input type="text" id="r-client" disabled></div>
+    <div class="form-row">
+      <div class="form-group"><label>Новая дата</label><input type="date" id="r-date"></div>
+      <div class="form-group"><label>Новое время</label><input type="time" id="r-time"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-reschedule')">Отмена</button>
+      <button class="btn" onclick="saveReschedule()">Перенести</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Добавить услугу -->
 <div class="modal-overlay" id="modal-service">
   <div class="modal">
-    <h3>Новая услуга</h3>
+    <h3 id="service-modal-title">Новая услуга</h3>
+    <input type="hidden" id="s-id">
     <div class="form-group"><label>Название</label><input type="text" id="s-name" placeholder="Маникюр с покрытием"></div>
     <div class="form-row">
       <div class="form-group"><label>Цена (₽)</label><input type="number" id="s-price" placeholder="1500"></div>
@@ -254,28 +362,45 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     </div>
   </div>
 </div>
- 
+
+<!-- MODAL: Чёрный список -->
+<div class="modal-overlay" id="modal-blacklist">
+  <div class="modal">
+    <h3>Добавить в чёрный список</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Имя</label><input type="text" id="bl-name" placeholder="Имя"></div>
+      <div class="form-group"><label>Телефон</label><input type="tel" id="bl-phone" placeholder="+7"></div>
+    </div>
+    <div class="form-group"><label>Причина</label><input type="text" id="bl-reason" placeholder="Причина блокировки"></div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-blacklist')">Отмена</button>
+      <button class="btn" onclick="saveBlacklist()">Добавить</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SURL='https://xxaidbvmmaplcpdemzek.supabase.co';
 const SKEY='sb_publishable_CF-2UO_YzpYZx8igekMgFw_0yKFzh0l';
 const DAYS_S=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 const DAYS_W=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 const DAYS_F=['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+const DAYS_FULL_W=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
 const MON=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MON_G=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
- 
-let master=null,bookDate=new Date(),services=[],schedView='week',schedDate=new Date();
-const todayStr=()=>fd(new Date());
+
+let master=null,bookDate=new Date(),services=[],schedView='week',schedDate=new Date(),allClients=[];
 const fd=d=>d.toISOString().split('T')[0];
 const fdr=d=>`${DAYS_S[d.getDay()]}, ${d.getDate()} ${MON_G[d.getMonth()]}`;
+const todayStr=()=>fd(new Date());
 const isPast=ds=>ds<todayStr();
 const isToday=ds=>ds===todayStr();
- 
+
 async function api(method,table,body=null,q=''){
   const r=await fetch(`${SURL}/rest/v1/${table}${q}`,{method,headers:{'apikey':SKEY,'Authorization':`Bearer ${SKEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
   if(!r.ok)return null;const t=await r.text();return t?JSON.parse(t):null;
 }
- 
+
 async function login(){
   const email=document.getElementById('login-email').value.trim();
   const pass=document.getElementById('login-password').value;
@@ -283,9 +408,8 @@ async function login(){
   if(data&&data.length>0){master=data[0];document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('master-name').textContent=master.name;initApp();}
   else document.getElementById('login-error').style.display='block';
 }
- 
 function logout(){master=null;document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
- 
+
 function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
@@ -293,21 +417,27 @@ function showPage(name,btn){
   if(name==='bookings')loadBookings();
   if(name==='services')loadServices();
   if(name==='schedule')renderSched();
+  if(name==='workhours')loadWorkHours();
+  if(name==='history')loadClients();
+  if(name==='stats')loadStats();
+  if(name==='blacklist')loadBlacklist();
 }
- 
+
 function changeDay(n){bookDate.setDate(bookDate.getDate()+n);document.getElementById('nav-date').textContent=fdr(bookDate);loadBookings();}
 function setView(v,btn){schedView=v;schedDate=new Date();document.querySelectorAll('.view-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSched();}
 function navSched(n){if(schedView==='day')schedDate.setDate(schedDate.getDate()+n);else if(schedView==='week')schedDate.setDate(schedDate.getDate()+n*7);else schedDate.setMonth(schedDate.getMonth()+n);renderSched();}
 function goToday(){schedDate=new Date();renderSched();}
 function getMon(d){const r=new Date(d),dow=r.getDay()||7;r.setDate(r.getDate()-dow+1);return r;}
- 
+function timeToMin(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
+function minToTime(m){return`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;}
+
 async function initApp(){
   document.getElementById('today-date').textContent=fdr(new Date());
   document.getElementById('nav-date').textContent=fdr(bookDate);
-  await loadServices();await loadBookings();await loadStats();
+  await loadServices();await loadBookings();await loadDashStats();
 }
- 
-async function loadStats(){
+
+async function loadDashStats(){
   const today=todayStr(),we=new Date();we.setDate(we.getDate()+7);
   const[tb,wb,pb]=await Promise.all([
     api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=eq.${today}&status=neq.cancelled&select=*,services(price)`),
@@ -320,60 +450,79 @@ async function loadStats(){
   const rev=tb?tb.reduce((s,b)=>s+(b.services?.price||0),0):0;
   document.getElementById('stat-revenue').textContent=rev.toLocaleString()+' ₽';
 }
- 
+
 async function loadBookings(){
   const list=document.getElementById('bookings-list');
   list.innerHTML='<div class="loading">Загрузка...</div>';
   const ds=fd(bookDate);
-  const data=await api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=eq.${ds}&order=start_time.asc&select=*,services(name,price)`);
-  const past=isPast(ds);
+  const[data,bl]=await Promise.all([
+    api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=eq.${ds}&order=start_time.asc&select=*,services(name,price)`),
+    api('GET','blacklist',null,`?master_id=eq.${master.id}&select=phone`)
+  ]);
+  const blPhones=new Set((bl||[]).map(b=>b.phone));
+  const past=isPast(ds),now=new Date();
   if(!data||data.length===0){
-    list.innerHTML=past
-      ?'<div class="empty-state"><div class="emoji">🗓</div><p>Этот день уже прошёл — записей не было</p></div>'
-      :'<div class="empty-state"><div class="emoji">📭</div><p>Нет записей на этот день</p></div>';
+    list.innerHTML=past?'<div class="empty-state"><div class="emoji">🗓</div><p>Этот день уже прошёл</p></div>':'<div class="empty-state"><div class="emoji">📭</div><p>Нет записей на этот день</p></div>';
     return;
   }
-  const now=new Date();
+  const statusLabel=s=>s==='pending'?'Ожидает':s==='confirmed'?'Подтверждено':'Отменено';
   list.innerHTML=data.map(b=>{
-    const bTime=new Date(`${ds}T${b.start_time}`);
-    const bPast=past||(isToday(ds)&&bTime<now);
-    const statusLabel=b.status==='pending'?'Ожидает':b.status==='confirmed'?'Подтверждено':'Отменено';
+    const bPast=past||(isToday(ds)&&new Date(`${ds}T${b.start_time}`)<now);
+    const isBl=blPhones.has(b.client_phone);
     const displayStatus=bPast&&b.status!=='cancelled'?'past':b.status;
-    const displayLabel=bPast&&b.status!=='cancelled'?'Завершено':statusLabel;
-    return `<div class="booking-item ${bPast?'past':''}">
+    const displayLabel=bPast&&b.status!=='cancelled'?'Завершено':statusLabel(b.status);
+    return`<div class="booking-item ${bPast?'past':''} ${isBl?'blacklisted':''}">
       <div class="booking-time">${b.start_time.slice(0,5)}</div>
-      <div class="booking-info"><h4>${b.client_name}</h4><p>${b.services?.name||'—'} · ${b.client_phone}</p>${b.comment?`<p style="font-size:.82rem">${b.comment}</p>`:''}</div>
+      <div class="booking-info">
+        <h4>${b.client_name}${isBl?' 🚫':''}</h4>
+        <p>${b.services?.name||'—'} · ${b.client_phone}</p>
+        ${b.comment?`<p style="font-size:.82rem">${b.comment}</p>`:''}
+      </div>
       <div><span class="status-badge status-${displayStatus}">${displayLabel}</span></div>
       <div class="booking-actions">
         ${!bPast&&b.status==='pending'?`<button class="action-btn" onclick="updStatus('${b.id}','confirmed')">✓</button>`:''}
+        ${!bPast&&b.status!=='cancelled'?`<button class="action-btn" onclick="openReschedule('${b.id}','${b.client_name}','${b.start_time}')">↔</button>`:''}
         ${!bPast&&b.status!=='cancelled'?`<button class="action-btn danger" onclick="updStatus('${b.id}','cancelled')">✕</button>`:''}
       </div>
     </div>`;
   }).join('');
 }
- 
-async function updStatus(id,status){await api('PATCH',`bookings?id=eq.${id}`,{status});loadBookings();loadStats();}
- 
+
+async function updStatus(id,status){await api('PATCH',`bookings?id=eq.${id}`,{status});loadBookings();loadDashStats();}
+
+function openReschedule(id,name,time){
+  document.getElementById('r-booking-id').value=id;
+  document.getElementById('r-client').value=name;
+  document.getElementById('r-date').value=fd(bookDate);
+  document.getElementById('r-time').value=time.slice(0,5);
+  document.getElementById('modal-reschedule').classList.add('open');
+}
+
+async function saveReschedule(){
+  const id=document.getElementById('r-booking-id').value;
+  const date=document.getElementById('r-date').value;
+  const time=document.getElementById('r-time').value;
+  if(!date||!time){alert('Выберите дату и время');return;}
+  const booking=await api('GET','bookings',null,`?id=eq.${id}&select=service_id,services(duration)`);
+  const duration=booking?.[0]?.services?.duration||60;
+  const endMin=timeToMin(time)+duration;
+  await api('PATCH',`bookings?id=eq.${id}`,{booking_date:date,start_time:time,end_time:minToTime(endMin)});
+  closeModal('modal-reschedule');loadBookings();
+}
+
 async function renderSched(){
   const content=document.getElementById('sched-content'),label=document.getElementById('sched-label');
   content.innerHTML='<div class="loading">Загрузка...</div>';
- 
+  const ts=todayStr();
   if(schedView==='day'){
-    const ds=fd(schedDate);
-    label.textContent=fdr(schedDate);
+    const ds=fd(schedDate);label.textContent=fdr(schedDate);
     const past=isPast(ds),today=isToday(ds);
     const data=await api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=eq.${ds}&status=neq.cancelled&order=start_time.asc&select=*,services(name,duration)`);
     const now=new Date();
-    content.innerHTML=`<div class="day-view-card">
-      <div class="day-view-title">${DAYS_F[schedDate.getDay()]}, ${schedDate.getDate()} ${MON_G[schedDate.getMonth()]}${today?' — сегодня':past?' — прошедший день':''}</div>
-      ${!data||data.length===0
-        ?`<div class="empty-state"><div class="emoji">${past?'🗓':'📭'}</div><p>${past?'Этот день уже прошёл':'Нет записей'}</p></div>`
-        :data.map(b=>{const bPast=past||(today&&new Date(`${ds}T${b.start_time}`)<now);return`<div class="day-view-slot">
-          <div class="day-view-time">${b.start_time.slice(0,5)}<br><span>${b.end_time.slice(0,5)}</span></div>
-          <div class="day-view-booking ${bPast?'past-booking':''}"><strong>${b.client_name}</strong>${b.services?.name||''} · ${b.services?.duration||''}мин${bPast?' <span style="font-size:.78rem;color:var(--mid)">— завершено</span>':''}</div>
-        </div>`;}).join('')}
+    content.innerHTML=`<div class="day-view-card"><div class="day-view-title">${DAYS_F[schedDate.getDay()]}, ${schedDate.getDate()} ${MON_G[schedDate.getMonth()]}${today?' — сегодня':past?' — прошедший день':''}</div>
+    ${!data||data.length===0?`<div class="empty-state"><div class="emoji">${past?'🗓':'📭'}</div><p>${past?'Этот день уже прошёл':'Нет записей'}</p></div>`:
+      data.map(b=>{const bPast=past||(today&&new Date(`${ds}T${b.start_time}`)<now);return`<div class="day-view-slot"><div class="day-view-time">${b.start_time.slice(0,5)}<br><span>${b.end_time.slice(0,5)}</span></div><div class="day-view-booking ${bPast?'past-booking':''}"><strong>${b.client_name}</strong>${b.services?.name||''} · ${b.services?.duration||''}мин${bPast?' — завершено':''}</div></div>`;}).join('')}
     </div>`;
- 
   } else if(schedView==='week'){
     const mon=getMon(schedDate),sun=new Date(mon);sun.setDate(mon.getDate()+6);
     label.textContent=`${mon.getDate()} ${MON_G[mon.getMonth()]} — ${sun.getDate()} ${MON_G[sun.getMonth()]}`;
@@ -382,15 +531,8 @@ async function renderSched(){
     content.innerHTML=`<div class="week-grid">${dates.map((d,i)=>{
       const ds=fd(d),past=isPast(ds),today=isToday(ds);
       const slots=(data||[]).filter(b=>b.booking_date===ds);
-      return`<div class="day-col ${today?'is-today':''} ${past?'is-past':''}">
-        <div class="day-header">${DAYS_W[i]}</div>
-        <div class="day-date ${today?'today':past?'past':''}">${d.getDate()}</div>
-        ${past&&slots.length===0?'<div class="past-label">день прошёл</div>':
-          slots.length===0?'<div style="font-size:.78rem;color:var(--mid)">Нет записей</div>':
-          slots.map(b=>`<div class="day-slot" onclick="goDay('${ds}')"><strong>${b.start_time.slice(0,5)}</strong>${b.client_name}<br><span style="color:var(--mid)">${b.services?.name||''}</span></div>`).join('')}
-      </div>`;
+      return`<div class="day-col ${today?'is-today':''} ${past?'is-past':''}"><div class="day-header">${DAYS_W[i]}</div><div class="day-date ${today?'today':past?'past':''}">${d.getDate()}</div>${past&&slots.length===0?'<div class="past-label">день прошёл</div>':slots.length===0?'<div style="font-size:.78rem;color:var(--mid)">Нет записей</div>':slots.map(b=>`<div class="day-slot" onclick="goDay('${ds}')"><strong>${b.start_time.slice(0,5)}</strong>${b.client_name}<br><span style="color:var(--mid)">${b.services?.name||''}</span></div>`).join('')}</div>`;
     }).join('')}</div>`;
- 
   } else {
     const y=schedDate.getFullYear(),m=schedDate.getMonth();
     label.textContent=`${MON[m]} ${y}`;
@@ -401,22 +543,11 @@ async function renderSched(){
     for(let i=1;i<startDow;i++){const d=new Date(y,m,1-(startDow-i));cells.push({d,other:true});}
     for(let i=1;i<=last.getDate();i++)cells.push({d:new Date(y,m,i),other:false});
     while(cells.length%7!==0){const l=cells[cells.length-1].d,d=new Date(l);d.setDate(l.getDate()+1);cells.push({d,other:true});}
-    content.innerHTML=`<div class="month-grid">
-      ${DAYS_W.map(d=>`<div class="month-header-cell">${d}</div>`).join('')}
-      ${cells.map(({d,other})=>{
-        const ds=fd(d),count=counts[ds]||0,today=isToday(ds),past=isPast(ds);
-        return`<div class="month-day ${today?'is-today':''} ${past&&!other?'is-past':''} ${other?'other-month':''}" onclick="goDay('${ds}')">
-          <div class="day-num">${d.getDate()}</div>
-          ${Array(Math.min(count,5)).fill(null).map(()=>`<span class="month-dot ${past?'past-dot':''}"></span>`).join('')}
-          ${count>5?`<span style="font-size:.72rem;color:var(--mid)">+${count-5}</span>`:''}
-        </div>`;
-      }).join('')}
-    </div>`;
+    content.innerHTML=`<div class="month-grid">${DAYS_W.map(d=>`<div class="month-header-cell">${d}</div>`).join('')}${cells.map(({d,other})=>{const ds=fd(d),count=counts[ds]||0,today=isToday(ds),past=isPast(ds);return`<div class="month-day ${today?'is-today':''} ${past&&!other?'is-past':''} ${other?'other-month':''}" onclick="goDay('${ds}')"><div class="day-num">${d.getDate()}</div>${Array(Math.min(count,5)).fill(null).map(()=>`<span class="month-dot ${past?'past-dot':''}"></span>`).join('')}${count>5?`<span style="font-size:.72rem;color:var(--mid)">+${count-5}</span>`:''}</div>`;}).join('')}</div>`;
   }
 }
- 
 function goDay(ds){schedDate=new Date(ds+'T00:00:00');schedView='day';document.querySelectorAll('.view-tab').forEach((b,i)=>b.classList.toggle('active',i===0));renderSched();}
- 
+
 async function loadServices(){
   const list=document.getElementById('services-list');
   list.innerHTML='<div class="loading">Загрузка...</div>';
@@ -424,34 +555,148 @@ async function loadServices(){
   services=data||[];
   document.getElementById('b-service').innerHTML=services.map(s=>`<option value="${s.id}">${s.name} — ${s.price} ₽ (${s.duration} мин)</option>`).join('');
   if(!data||data.length===0){list.innerHTML='<div class="empty-state"><div class="emoji">💅</div><p>Добавьте первую услугу</p></div>';return;}
-  list.innerHTML=data.map(s=>`<div class="service-item">
-    <h4>${s.name}</h4>
-    <div class="service-meta"><span class="service-price-tag">${s.price.toLocaleString()} ₽</span><span>⏱ ${s.duration} мин</span></div>
-    <div class="service-item-actions"><button class="action-btn danger" onclick="delSvc('${s.id}')">Удалить</button></div>
+  list.innerHTML=data.map(s=>`<div class="service-item"><h4>${s.name}</h4><div class="service-meta"><span class="service-price-tag">${s.price.toLocaleString()} ₽</span><span>⏱ ${s.duration} мин</span></div><div class="service-item-actions"><button class="action-btn" onclick="openEditService('${s.id}','${s.name.replace(/'/g,"\\'")}',${s.price},${s.duration})">Изменить</button><button class="action-btn danger" onclick="delSvc('${s.id}')">Удалить</button></div></div>`).join('');
+}
+
+function openAddService(){
+  document.getElementById('service-modal-title').textContent='Новая услуга';
+  document.getElementById('s-id').value='';
+  document.getElementById('s-name').value='';
+  document.getElementById('s-price').value='';
+  document.getElementById('s-duration').value='';
+  document.getElementById('modal-service').classList.add('open');
+}
+
+function openEditService(id,name,price,duration){
+  document.getElementById('service-modal-title').textContent='Редактировать услугу';
+  document.getElementById('s-id').value=id;
+  document.getElementById('s-name').value=name;
+  document.getElementById('s-price').value=price;
+  document.getElementById('s-duration').value=duration;
+  document.getElementById('modal-service').classList.add('open');
+}
+
+async function saveService(){
+  const id=document.getElementById('s-id').value;
+  const name=document.getElementById('s-name').value;
+  const price=parseInt(document.getElementById('s-price').value);
+  const duration=parseInt(document.getElementById('s-duration').value);
+  if(!name||!price||!duration){alert('Заполните все поля');return;}
+  if(id){await api('PATCH',`services?id=eq.${id}`,{name,price,duration});}
+  else{await api('POST','services',{master_id:master.id,name,price,duration});}
+  closeModal('modal-service');loadServices();
+}
+async function delSvc(id){if(!confirm('Удалить услугу?'))return;await api('DELETE',`services?id=eq.${id}`);loadServices();}
+
+async function loadWorkHours(){
+  const grid=document.getElementById('work-hours-grid');
+  const data=await api('GET','schedule',null,`?master_id=eq.${master.id}&specific_date=is.null&order=day_of_week.asc`);
+  const schedule={};(data||[]).forEach(d=>schedule[d.day_of_week]=d);
+  grid.innerHTML=DAYS_FULL_W.map((day,i)=>{
+    const dow=i+1===7?0:i+1;
+    const s=schedule[dow];
+    return`<div class="work-day-card"><h4>${day}<label class="toggle-switch"><input type="checkbox" id="wh-active-${dow}" ${s&&!s.is_day_off?'checked':''}><span class="toggle-slider"></span></label></h4><div class="time-row"><span>Начало</span><input type="time" id="wh-start-${dow}" value="${s?s.start_time.slice(0,5):'09:00'}"><span>Конец</span><input type="time" id="wh-end-${dow}" value="${s?s.end_time.slice(0,5):'20:00'}"></div></div>`;
+  }).join('');
+}
+
+async function saveWorkHours(){
+  const days=[1,2,3,4,5,6,0];
+  for(const dow of days){
+    const active=document.getElementById(`wh-active-${dow}`)?.checked;
+    const start=document.getElementById(`wh-start-${dow}`)?.value;
+    const end=document.getElementById(`wh-end-${dow}`)?.value;
+    if(!start||!end)continue;
+    const existing=await api('GET','schedule',null,`?master_id=eq.${master.id}&day_of_week=eq.${dow}&specific_date=is.null`);
+    if(existing&&existing.length>0){
+      await api('PATCH',`schedule?id=eq.${existing[0].id}`,{is_day_off:!active,start_time:start,end_time:end});
+    } else {
+      await api('POST','schedule',{master_id:master.id,day_of_week:dow,start_time:start,end_time:end,is_day_off:!active});
+    }
+  }
+  alert('Рабочие часы сохранены!');
+}
+
+async function loadClients(){
+  const data=await api('GET','bookings',null,`?master_id=eq.${master.id}&status=neq.cancelled&order=booking_date.desc&select=*,services(name,price)`);
+  const clientMap={};
+  (data||[]).forEach(b=>{
+    const key=b.client_phone;
+    if(!clientMap[key])clientMap[key]={name:b.client_name,phone:b.client_phone,visits:[]};
+    clientMap[key].visits.push(b);
+  });
+  allClients=Object.values(clientMap);
+  renderClients(allClients);
+}
+
+function renderClients(clients){
+  const list=document.getElementById('clients-list');
+  if(!clients.length){list.innerHTML='<div class="empty-state"><div class="emoji">👤</div><p>Нет клиентов</p></div>';return;}
+  list.innerHTML=clients.map(c=>`<div class="client-card">
+    <div class="client-card-header">
+      <div><div class="client-card-name">${c.name}</div><div class="client-card-phone">${c.phone}</div></div>
+      <div style="text-align:right"><div style="font-size:0.85rem;color:var(--mid)">${c.visits.length} визит${c.visits.length===1?'':'ов'}</div><div style="font-size:0.85rem;color:var(--rose);font-weight:500">${c.visits.reduce((s,v)=>s+(v.services?.price||0),0).toLocaleString()} ₽</div></div>
+    </div>
+    <div class="client-visits">${c.visits.slice(0,5).map(v=>`<div class="visit-row"><div class="visit-date">${v.booking_date}</div><div class="visit-service">${v.services?.name||'—'}</div><div class="visit-price">${v.services?.price?.toLocaleString()||'—'} ₽</div></div>`).join('')}</div>
+    ${c.visits.length>5?`<div style="font-size:0.82rem;color:var(--mid);margin-top:0.5rem">и ещё ${c.visits.length-5} визит(ов)</div>`:''}
   </div>`).join('');
 }
- 
-async function delSvc(id){if(!confirm('Удалить услугу?'))return;await api('DELETE',`services?id=eq.${id}`);loadServices();}
- 
+
+function filterClients(){
+  const q=document.getElementById('client-search').value.toLowerCase();
+  renderClients(allClients.filter(c=>c.name.toLowerCase().includes(q)||c.phone.includes(q)));
+}
+
+async function loadStats(){
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const[monthB,allB]=await Promise.all([
+    api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=gte.${fd(monthStart)}&status=eq.confirmed&select=*,services(name,price)`),
+    api('GET','bookings',null,`?master_id=eq.${master.id}&status=eq.confirmed&select=client_phone,services(name,price)`)
+  ]);
+  const monthRev=(monthB||[]).reduce((s,b)=>s+(b.services?.price||0),0);
+  document.getElementById('s-month').textContent=monthRev.toLocaleString()+' ₽';
+  document.getElementById('s-total').textContent=(allB||[]).length;
+  const phones=new Set((allB||[]).map(b=>b.client_phone));
+  document.getElementById('s-clients').textContent=phones.size;
+  const svcCount={};
+  (allB||[]).forEach(b=>{const n=b.services?.name;if(n)svcCount[n]=(svcCount[n]||0)+1;});
+  const sorted=Object.entries(svcCount).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const max=sorted[0]?.[1]||1;
+  document.getElementById('services-chart').innerHTML=sorted.length===0?'<div style="color:var(--mid);font-size:0.9rem">Нет данных</div>':sorted.map(([name,count])=>`<div class="chart-bar-row"><div class="chart-bar-label">${name}</div><div class="chart-bar"><div class="chart-bar-fill" style="width:${Math.round(count/max*100)}%"></div></div><div class="chart-bar-val">${count} раз</div></div>`).join('');
+}
+
+async function loadBlacklist(){
+  const list=document.getElementById('blacklist-list');
+  list.innerHTML='<div class="loading">Загрузка...</div>';
+  const data=await api('GET','blacklist',null,`?master_id=eq.${master.id}&order=created_at.desc`);
+  if(!data||data.length===0){list.innerHTML='<div class="empty-state"><div class="emoji">✅</div><p>Чёрный список пуст</p></div>';return;}
+  list.innerHTML=data.map(b=>`<div class="blacklist-item"><div class="blacklist-info"><h4>${b.name}</h4><p>${b.phone}</p>${b.reason?`<div class="blacklist-reason">${b.reason}</div>`:''}</div><button class="action-btn danger" onclick="removeBlacklist('${b.id}')">Удалить</button></div>`).join('');
+}
+
+function openAddBlacklist(){document.getElementById('bl-name').value='';document.getElementById('bl-phone').value='';document.getElementById('bl-reason').value='';document.getElementById('modal-blacklist').classList.add('open');}
+
+async function saveBlacklist(){
+  const name=document.getElementById('bl-name').value;
+  const phone=document.getElementById('bl-phone').value;
+  const reason=document.getElementById('bl-reason').value;
+  if(!name||!phone){alert('Введите имя и телефон');return;}
+  await api('POST','blacklist',{master_id:master.id,name,phone,reason});
+  closeModal('modal-blacklist');loadBlacklist();
+}
+
+async function removeBlacklist(id){if(!confirm('Удалить из чёрного списка?'))return;await api('DELETE',`blacklist?id=eq.${id}`);loadBlacklist();}
+
 function openAddBooking(){document.getElementById('b-date').value=fd(bookDate);document.getElementById('modal-booking').classList.add('open');}
-function openAddService(){document.getElementById('modal-service').classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
- 
+
 async function saveBooking(){
   const sId=document.getElementById('b-service').value,svc=services.find(s=>s.id===sId),t=document.getElementById('b-time').value;
   if(!document.getElementById('b-name').value||!t||!sId){alert('Заполните все поля');return;}
   const[h,m]=t.split(':').map(Number),em=h*60+m+(svc?.duration||60);
   await api('POST','bookings',{master_id:master.id,service_id:sId,client_name:document.getElementById('b-name').value,client_phone:document.getElementById('b-phone').value,booking_date:document.getElementById('b-date').value,start_time:t,end_time:`${String(Math.floor(em/60)).padStart(2,'0')}:${String(em%60).padStart(2,'0')}`,comment:document.getElementById('b-comment').value,status:'confirmed'});
-  closeModal('modal-booking');loadBookings();loadStats();
+  closeModal('modal-booking');loadBookings();loadDashStats();
 }
- 
-async function saveService(){
-  const name=document.getElementById('s-name').value,price=parseInt(document.getElementById('s-price').value),duration=parseInt(document.getElementById('s-duration').value);
-  if(!name||!price||!duration){alert('Заполните все поля');return;}
-  await api('POST','services',{master_id:master.id,name,price,duration});
-  closeModal('modal-service');loadServices();
-}
- 
+
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
 </script>
