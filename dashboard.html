@@ -443,7 +443,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     </div>
     <div id="day-time-group">
       <div class="form-row">
-        <div class="form-group"><label>Начало работы</label><input type="time" id="day-start" value="09:00"></div>
+        <div class="form-group"><label>Начало работы</label><input type="time" id="day-start" value="09:00" onchange="fixEndTime()"></div>
         <div class="form-group"><label>Конец работы</label><input type="time" id="day-end" value="20:00"></div>
       </div>
     </div>
@@ -873,11 +873,27 @@ function toggleDayType(){
   document.getElementById('day-time-group').style.display=isWork?'block':'none';
 }
 
+function fixEndTime(){
+  const start=document.getElementById('day-start').value;
+  const end=document.getElementById('day-end').value;
+  if(start&&end&&start>=end){
+    // Ставим конец на 1 час позже начала
+    const[h,m]=start.split(':').map(Number);
+    const newEnd=`${String(Math.min(h+1,23)).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    document.getElementById('day-end').value=newEnd;
+  }
+}
+
 async function saveDaySettings(){
   const ds=document.getElementById('day-ds').value;
   const isOff=document.getElementById('day-type').value==='off';
   const start=document.getElementById('day-start').value||'09:00';
   const end=document.getElementById('day-end').value||'20:00';
+
+  if(!isOff&&start>=end){
+    showToast('Конец работы должен быть позже начала!','error');
+    return;
+  }
 
   const copyDows=[...document.querySelectorAll('.copy-day-cb:checked')].map(cb=>parseInt(cb.value));
 
