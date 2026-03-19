@@ -295,7 +295,8 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     <!-- РАБОЧИЕ ЧАСЫ -->
     <div class="page" id="page-workhours">
       <div class="page-title">Рабочие <em>часы</em></div>
-      <div class="page-sub">Настройте базовое расписание по дням недели</div>
+      <div class="page-sub">Кликните на дату чтобы настроить расписание</div>
+
       <div style="background:var(--bg);border-radius:1rem;padding:1.4rem;border:0.5px solid var(--border);margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem">
         <div style="font-size:1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);white-space:nowrap">🌍 Часовой пояс</div>
         <select id="tz-select" onchange="saveTZ()" style="flex:1;padding:0.6rem 1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none">
@@ -311,34 +312,29 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
           <option value="Asia/Kamchatka">Камчатка (UTC+12)</option>
         </select>
       </div>
-      <div style="margin-bottom:1.5rem"><button class="btn" onclick="saveWorkHours()">Сохранить изменения</button></div>
-      <div class="work-hours-grid" id="work-hours-grid"><div class="loading">Загрузка...</div></div>
 
-      <!-- ИСКЛЮЧЕНИЯ -->
-      <div style="margin-top:3rem">
-        <div style="font-family:var(--font-serif);font-size:clamp(1.2rem, 2.5vw, 1.8rem);font-weight:300;margin-bottom:0.25rem">Исключения <em style="color:var(--rose);font-style:italic">для дат</em></div>
-        <div style="font-size:1rem;color:var(--mid);margin-bottom:1.5rem">Кликните на дату чтобы добавить или убрать исключение</div>
-        <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;color:var(--mid)"><span style="width:12px;height:12px;background:#4A9B6F;border-radius:50%;display:inline-block"></span> Открыт (рабочий)</div>
-          <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;color:var(--mid)"><span style="width:12px;height:12px;background:#E24B4A;border-radius:50%;display:inline-block"></span> Закрыт (выходной)</div>
+      <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;color:var(--mid)"><span style="width:10px;height:10px;background:#4A9B6F;border-radius:50%;display:inline-block"></span> Рабочий</div>
+        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;color:var(--mid)"><span style="width:10px;height:10px;background:#E24B4A;border-radius:50%;display:inline-block"></span> Выходной</div>
+        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;color:var(--mid)"><span style="width:10px;height:10px;background:var(--border);border-radius:50%;display:inline-block;border:1px solid var(--mid)"></span> Не задан</div>
+      </div>
+
+      <div style="background:var(--bg);border-radius:1rem;padding:1.5rem;border:0.5px solid var(--border);max-width:520px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+          <button onclick="excCalPrev()" style="background:none;border:0.5px solid var(--border);border-radius:0.5rem;padding:0.4rem 0.85rem;cursor:pointer;color:var(--mid);font-size:1rem;font-family:var(--font-sans);transition:all 0.15s" onmouseover="this.style.borderColor='var(--rose)';this.style.color='var(--rose)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--mid)'">←</button>
+          <span id="exc-cal-label" style="font-family:var(--font-serif);font-size:1.2rem"></span>
+          <button onclick="excCalNext()" style="background:none;border:0.5px solid var(--border);border-radius:0.5rem;padding:0.4rem 0.85rem;cursor:pointer;color:var(--mid);font-size:1rem;font-family:var(--font-sans);transition:all 0.15s" onmouseover="this.style.borderColor='var(--rose)';this.style.color='var(--rose)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--mid)'">→</button>
         </div>
-        <div style="background:var(--bg);border-radius:1rem;padding:1.5rem;border:0.5px solid var(--border);max-width:500px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-            <button onclick="excCalPrev()" style="background:none;border:0.5px solid var(--border);border-radius:0.5rem;padding:0.4rem 0.75rem;cursor:pointer;color:var(--mid);font-size:1rem;font-family:var(--font-sans)">←</button>
-            <span id="exc-cal-label" style="font-family:var(--font-serif);font-size:1.1rem"></span>
-            <button onclick="excCalNext()" style="background:none;border:0.5px solid var(--border);border-radius:0.5rem;padding:0.4rem 0.75rem;cursor:pointer;color:var(--mid);font-size:1rem;font-family:var(--font-sans)">→</button>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:0.25rem;text-align:center">
-            <div style="font-size:0.85rem;color:var(--mid);padding:0.25rem">Пн</div>
-            <div style="font-size:0.85rem;color:var(--mid);padding:0.25rem">Вт</div>
-            <div style="font-size:0.85rem;color:var(--mid);padding:0.25rem">Ср</div>
-            <div style="font-size:0.85rem;color:var(--mid);padding:0.25rem">Чт</div>
-            <div style="font-size:0.85rem;color:var(--mid);padding:0.25rem">Пт</div>
-            <div style="font-size:0.85rem;color:var(--mid);padding:0.25rem">Сб</div>
-            <div style="font-size:0.85rem;color:var(--mid);padding:0.25rem">Вс</div>
-          </div>
-          <div id="exc-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0.25rem;text-align:center"></div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:0.25rem;text-align:center;margin-bottom:0.5rem">
+          <div style="font-size:0.82rem;color:var(--mid);padding:0.25rem">Пн</div>
+          <div style="font-size:0.82rem;color:var(--mid);padding:0.25rem">Вт</div>
+          <div style="font-size:0.82rem;color:var(--mid);padding:0.25rem">Ср</div>
+          <div style="font-size:0.82rem;color:var(--mid);padding:0.25rem">Чт</div>
+          <div style="font-size:0.82rem;color:var(--mid);padding:0.25rem">Пт</div>
+          <div style="font-size:0.82rem;color:var(--mid);padding:0.25rem">Сб</div>
+          <div style="font-size:0.82rem;color:var(--mid);padding:0.25rem">Вс</div>
         </div>
+        <div id="exc-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0.25rem;text-align:center"></div>
       </div>
     </div>
 
@@ -433,8 +429,43 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
   </div>
 </div>
 
-<!-- MODAL: Исключение -->
-<div class="modal-overlay" id="modal-exception">
+<!-- MODAL: Настройка дня -->
+<div class="modal-overlay" id="modal-day-settings">
+  <div class="modal">
+    <h3 id="day-modal-title">Настройка дня</h3>
+    <input type="hidden" id="day-ds">
+    <div class="form-group">
+      <label>Тип дня</label>
+      <select id="day-type" onchange="toggleDayType()" style="width:100%;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none">
+        <option value="work">🟢 Рабочий день</option>
+        <option value="off">🔴 Выходной</option>
+      </select>
+    </div>
+    <div id="day-time-group">
+      <div class="form-row">
+        <div class="form-group"><label>Начало работы</label><input type="time" id="day-start" value="09:00"></div>
+        <div class="form-group"><label>Конец работы</label><input type="time" id="day-end" value="20:00"></div>
+      </div>
+    </div>
+    <div style="background:var(--rose-light);border-radius:0.75rem;padding:1rem;margin:1rem 0">
+      <div style="font-size:0.9rem;color:var(--mid);margin-bottom:0.75rem">📋 Скопировать это расписание на:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem" id="copy-days-group">
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.9rem;cursor:pointer"><input type="checkbox" value="1" class="copy-day-cb"> Пн</label>
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.9rem;cursor:pointer"><input type="checkbox" value="2" class="copy-day-cb"> Вт</label>
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.9rem;cursor:pointer"><input type="checkbox" value="3" class="copy-day-cb"> Ср</label>
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.9rem;cursor:pointer"><input type="checkbox" value="4" class="copy-day-cb"> Чт</label>
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.9rem;cursor:pointer"><input type="checkbox" value="5" class="copy-day-cb"> Пт</label>
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.9rem;cursor:pointer"><input type="checkbox" value="6" class="copy-day-cb"> Сб</label>
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.9rem;cursor:pointer"><input type="checkbox" value="0" class="copy-day-cb"> Вс</label>
+      </div>
+      <div style="font-size:0.82rem;color:var(--mid);margin-top:0.5rem">Оставьте пустым чтобы применить только к этой дате</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('modal-day-settings')">Отмена</button>
+      <button class="btn" onclick="saveDaySettings()">Сохранить</button>
+    </div>
+  </div>
+</div>
   <div class="modal">
     <h3>Исключение для даты</h3>
     <div class="form-group">
@@ -807,39 +838,76 @@ function renderExcCal(){
     const ds=fd(d);
     const ex=excData[ds];
     const isToday=ds===today;
-    const isPastDay=ds<today;
-    const dot=ex?`<div style="width:8px;height:8px;border-radius:50%;background:${ex.is_day_off?'#E24B4A':'#4A9B6F'};margin:2px auto 0"></div>`:'<div style="height:10px"></div>';
-    return`<div onclick="${other||isPastDay?'':` excToggle('${ds}')`}" style="padding:0.4rem 0.25rem;border-radius:0.5rem;cursor:${other||isPastDay?'default':'pointer'};opacity:${other?0.25:isPastDay?0.4:1};background:${isToday?'var(--rose-light)':'transparent'}">
-      <div style="font-size:0.9rem;font-weight:${isToday?'500':'400'};color:${isToday?'var(--rose)':isPastDay?'var(--mid)':'var(--dark)'}">${d.getDate()}</div>
+    let dot='<div style="height:10px"></div>';
+    if(ex) dot=`<div style="width:8px;height:8px;border-radius:50%;background:${ex.is_day_off?'#E24B4A':'#4A9B6F'};margin:2px auto 0"></div>`;
+    return`<div onclick="${other?'':` openDaySettings('${ds}')`}" style="padding:0.4rem 0.2rem;border-radius:0.5rem;cursor:${other?'default':'pointer'};opacity:${other?0.2:1};background:${isToday?'var(--rose-light)':'transparent'};transition:background 0.15s" ${!other?`onmouseover="this.style.background='var(--rose-light)'" onmouseout="this.style.background='${isToday?'var(--rose-light)':'transparent'}'"`:''}>
+      <div style="font-size:0.9rem;font-weight:${isToday?'500':'400'};color:${isToday?'var(--rose)':'var(--dark)'}">${d.getDate()}</div>
       ${dot}
     </div>`;
   }).join('');
 }
 
-async function excToggle(ds){
+function openDaySettings(ds){
+  const[y,m,d]=ds.split('-').map(Number);
+  const dateObj=new Date(y,m-1,d);
+  const days=['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+  const months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  document.getElementById('day-modal-title').textContent=`${days[dateObj.getDay()]}, ${d} ${months[m-1]} ${y}`;
+  document.getElementById('day-ds').value=ds;
   const ex=excData[ds];
-  if(ex){
-    if(ex.is_day_off){
-      await api('PATCH',`schedule?id=eq.${ex.id}`,{is_day_off:false,start_time:'09:00',end_time:'20:00'});
-      showToast('День открыт как рабочий');
-    } else {
-      await api('DELETE',`schedule?id=eq.${ex.id}`);
-      showToast('Исключение удалено');
+  document.getElementById('day-type').value=ex&&ex.is_day_off?'off':'work';
+  document.getElementById('day-start').value=ex&&!ex.is_day_off?ex.start_time.slice(0,5):'09:00';
+  document.getElementById('day-end').value=ex&&!ex.is_day_off?ex.end_time.slice(0,5):'20:00';
+  toggleDayType();
+  // Снимаем все чекбоксы и отмечаем текущий день недели
+  document.querySelectorAll('.copy-day-cb').forEach(cb=>{
+    cb.checked=false;
+  });
+  document.getElementById('modal-day-settings').classList.add('open');
+}
+
+function toggleDayType(){
+  const isWork=document.getElementById('day-type').value==='work';
+  document.getElementById('day-time-group').style.display=isWork?'block':'none';
+}
+
+async function saveDaySettings(){
+  const ds=document.getElementById('day-ds').value;
+  const isOff=document.getElementById('day-type').value==='off';
+  const start=document.getElementById('day-start').value||'09:00';
+  const end=document.getElementById('day-end').value||'20:00';
+
+  // Сохраняем текущую дату
+  await saveExceptionForDate(ds,isOff,start,end);
+
+  // Копируем на выбранные дни недели
+  const copyDows=[...document.querySelectorAll('.copy-day-cb:checked')].map(cb=>parseInt(cb.value));
+  if(copyDows.length>0){
+    // Найдём все даты в текущем месяце с нужными днями недели
+    const[y,m]=ds.split('-').map(Number);
+    const from=new Date(y,m-1,1),to=new Date(y,m,0);
+    for(let d=new Date(from);d<=to;d.setDate(d.getDate()+1)){
+      const dds=fd(d);
+      if(dds!==ds&&copyDows.includes(d.getDay())){
+        await saveExceptionForDate(dds,isOff,start,end);
+      }
     }
+    showToast(`Скопировано на ${copyDows.length} дн. недели!`);
   } else {
-    const[y,m,d]=ds.split('-').map(Number);
-    const dow=new Date(y,m-1,d).getDay();
-    const base=await api('GET','schedule',null,`?master_id=eq.${master.id}&day_of_week=eq.${dow}&specific_date=is.null`);
-    const isBaseOff=!base||base.length===0||base[0].is_day_off;
-    if(isBaseOff){
-      await api('POST','schedule',{master_id:master.id,specific_date:ds,start_time:'09:00',end_time:'20:00',is_day_off:false});
-      showToast('День открыт как рабочий');
-    } else {
-      await api('POST','schedule',{master_id:master.id,specific_date:ds,start_time:'09:00',end_time:'20:00',is_day_off:true});
-      showToast('День закрыт');
-    }
+    showToast('Расписание сохранено!');
   }
+
+  closeModal('modal-day-settings');
   await loadExceptions();
+}
+
+async function saveExceptionForDate(ds,isOff,start,end){
+  const existing=await api('GET','schedule',null,`?master_id=eq.${master.id}&specific_date=eq.${ds}`);
+  if(existing&&existing.length>0){
+    await api('PATCH',`schedule?id=eq.${existing[0].id}`,{is_day_off:isOff,start_time:isOff?'09:00':start,end_time:isOff?'20:00':end});
+  } else {
+    await api('POST','schedule',{master_id:master.id,specific_date:ds,start_time:isOff?'09:00':start,end_time:isOff?'20:00':end,is_day_off:isOff});
+  }
 }
 
 function excCalPrev(){excCalDate.setMonth(excCalDate.getMonth()-1);loadExceptions();}
@@ -848,6 +916,8 @@ function openAddException(){}
 function toggleExceptionType(){}
 async function saveException(){}
 async function deleteException(id){await api('DELETE',`schedule?id=eq.${id}`);loadExceptions();showToast('Исключение удалено');}
+function saveWorkHours(){}
+async function loadWorkHours(){}
 
 
 function showToast(msg, type='success'){
@@ -967,7 +1037,5 @@ function toggleTheme(){
 const savedTheme=localStorage.getItem('nail_theme');
 if(savedTheme==='dark'){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='☀️ Светлая';}
 </script>
-</body>
-</html>
 </body>
 </html>
