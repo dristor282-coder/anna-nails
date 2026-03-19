@@ -268,6 +268,21 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     <div class="page" id="page-workhours">
       <div class="page-title">Рабочие <em>часы</em></div>
       <div class="page-sub">Настройте расписание по дням недели</div>
+      <div style="background:#fff;border-radius:1rem;padding:1.4rem;border:0.5px solid rgba(200,114,106,0.1);margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem">
+        <div style="font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);white-space:nowrap">🌍 Часовой пояс</div>
+        <select id="tz-select" onchange="saveTZ()" style="flex:1;padding:0.6rem 1rem;border:0.5px solid #DDD0CE;border-radius:0.75rem;font-family:var(--font-sans);font-size:0.95rem;color:var(--dark);outline:none">
+          <option value="Europe/Moscow">Москва (UTC+3)</option>
+          <option value="Europe/Samara">Самара (UTC+4)</option>
+          <option value="Asia/Yekaterinburg">Екатеринбург (UTC+5)</option>
+          <option value="Asia/Omsk">Омск (UTC+6)</option>
+          <option value="Asia/Krasnoyarsk">Красноярск (UTC+7)</option>
+          <option value="Asia/Irkutsk">Иркутск (UTC+8)</option>
+          <option value="Asia/Yakutsk">Якутск (UTC+9)</option>
+          <option value="Asia/Vladivostok">Владивосток (UTC+10)</option>
+          <option value="Asia/Magadan">Магадан (UTC+11)</option>
+          <option value="Asia/Kamchatka">Камчатка (UTC+12)</option>
+        </select>
+      </div>
       <div style="margin-bottom:1.5rem"><button class="btn" onclick="saveWorkHours()">Сохранить изменения</button></div>
       <div class="work-hours-grid" id="work-hours-grid"><div class="loading">Загрузка...</div></div>
     </div>
@@ -389,8 +404,11 @@ const DAYS_FULL_W=['Понедельник','Вторник','Среда','Че�
 const MON=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MON_G=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 
-let master=null,bookDate=new Date(),services=[],schedView='week',schedDate=new Date(),allClients=[];
-const fd=d=>d.toISOString().split('T')[0];
+let master=null,bookDate=new Date(),services=[],schedView='week',schedDate=new Date(),allClients=[],userTZ='Europe/Moscow';
+const fd=d=>{
+  const tz=new Date(d.toLocaleString('en-US',{timeZone:userTZ}));
+  return`${tz.getFullYear()}-${String(tz.getMonth()+1).padStart(2,'0')}-${String(tz.getDate()).padStart(2,'0')}`;
+};
 const fdr=d=>`${DAYS_S[d.getDay()]}, ${d.getDate()} ${MON_G[d.getMonth()]}`;
 const todayStr=()=>fd(new Date());
 const isPast=ds=>ds<todayStr();
@@ -405,10 +423,37 @@ async function login(){
   const email=document.getElementById('login-email').value.trim();
   const pass=document.getElementById('login-password').value;
   const data=await api('GET','masters',null,`?email=eq.${encodeURIComponent(email)}&password=eq.${encodeURIComponent(pass)}&select=*`);
-  if(data&&data.length>0){master=data[0];document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('master-name').textContent=master.name;initApp();}
-  else document.getElementById('login-error').style.display='block';
+  if(data&&data.length>0){
+    master=data[0];
+    localStorage.setItem('nail_session',JSON.stringify({master:master,expires:Date.now()+86400000}));
+    startApp();
+  } else document.getElementById('login-error').style.display='block';
 }
-function logout(){master=null;document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
+
+function startApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('master-name').textContent=master.name;
+  initApp();
+}
+
+function logout(){
+  master=null;
+  localStorage.removeItem('nail_session');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+
+function checkSession(){
+  try{
+    const s=JSON.parse(localStorage.getItem('nail_session'));
+    if(s&&s.expires>Date.now()){master=s.master;startApp();return true;}
+    localStorage.removeItem('nail_session');
+  }catch(e){}
+  return false;
+}
+
+checkSession();
 
 function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -432,9 +477,20 @@ function timeToMin(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
 function minToTime(m){return`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;}
 
 async function initApp(){
+  userTZ=localStorage.getItem(`tz_${master?.id}`)||'Europe/Moscow';
+  const tzSelect=document.getElementById('tz-select');
+  if(tzSelect)tzSelect.value=userTZ;
   document.getElementById('today-date').textContent=fdr(new Date());
   document.getElementById('nav-date').textContent=fdr(bookDate);
   await loadServices();await loadBookings();await loadDashStats();
+}
+
+function saveTZ(){
+  userTZ=document.getElementById('tz-select').value;
+  localStorage.setItem(`tz_${master?.id}`,userTZ);
+  bookDate=new Date();schedDate=new Date();
+  document.getElementById('nav-date').textContent=fdr(bookDate);
+  loadBookings();
 }
 
 async function loadDashStats(){
