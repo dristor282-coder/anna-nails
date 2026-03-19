@@ -270,7 +270,7 @@ nav ul{display:none}
           <option value="">Выберите услугу</option>
         </select>
       </div>
-      <div class="form-group">
+      <div class="form-group" id="cal-group" style="display:none">
         <label>Дата</label>
         <input type="hidden" id="f-date">
         <div class="booking-calendar">
@@ -286,6 +286,7 @@ nav ul{display:none}
           <div id="bcal-grid" class="bcal-grid"></div>
         </div>
       </div>
+      <div id="cal-hint" style="text-align:center;padding:1.5rem;color:var(--mid);font-size:1rem">👆 Сначала выберите услугу</div>
       <div class="form-group" id="slots-group" style="display:none">
         <label>Доступное время</label>
         <div class="slots-grid" id="slots-grid"></div>
@@ -389,8 +390,6 @@ async function loadServices() {
 
   select.innerHTML = '<option value="">Выберите услугу</option>' +
     data.map(s => `<option value="${s.id}">${s.name} — ${s.price.toLocaleString()} ₽ (${s.duration} мин)</option>`).join('');
-
-  await initBcal();
 }
 
 function selectService(id) {
@@ -400,8 +399,20 @@ function selectService(id) {
 }
 
 function onServiceChange() {
-  const date = document.getElementById('f-date').value;
-  if (date) loadSlots();
+  const serviceId = document.getElementById('f-service').value;
+  if (!serviceId) {
+    document.getElementById('cal-group').style.display = 'none';
+    document.getElementById('cal-hint').style.display = 'block';
+    document.getElementById('slots-group').style.display = 'none';
+    document.getElementById('f-date').value = '';
+    return;
+  }
+  document.getElementById('cal-hint').style.display = 'none';
+  document.getElementById('cal-group').style.display = 'block';
+  document.getElementById('f-date').value = '';
+  document.getElementById('slots-group').style.display = 'none';
+  bcalDate = new Date();
+  loadBcalMonth();
 }
 
 async function loadSlots() {
@@ -466,7 +477,7 @@ async function loadSlots() {
 
   const slots = [];
   for (let min = workStart; min + service.duration <= workEnd; min += 30) {
-    if (min <= nowMin) continue;
+    if (min < nowMin) continue; // убираем только уже прошедшие
     const end = min + service.duration;
     const conflict = booked.some(b => min < b.end && end > b.start);
     if (!conflict) slots.push(min);
@@ -583,35 +594,79 @@ if(savedTheme==='dark'){document.body.classList.add('dark');document.getElementB
 let bcalDate = new Date();
 let bcalSchedule = {};
 
-async function initBcal() {
-  await loadBcalMonth();
-}
 
 async function loadBcalMonth() {
   const y = bcalDate.getFullYear(), m = bcalDate.getMonth();
-  document.getElementById('bcal-label').textContent = `${['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][m]} ${y}`;
+  const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  document.getElementById('bcal-label').textContent = `${months[m]} ${y}`;
 
   const from = `${y}-${String(m+1).padStart(2,'0')}-01`;
   const last = new Date(y, m+1, 0);
   const to = `${y}-${String(m+1).padStart(2,'0')}-${String(last.getDate()).padStart(2,'0')}`;
 
-  // Загружаем исключения и базовое расписание за месяц
-  const [exceptions, baseSchedule] = await Promise.all([
+  const serviceId = document.getElementById('f-service').value;
+  const service = servicesData.find(s => s.id === serviceId);
+  const duration = service ? service.duration : 60;
+
+  // Загружаем всё параллельно
+  const [exceptions, baseSchedule, bookings] = await Promise.all([
     api('GET', 'schedule', null, `?master_id=eq.${MASTER_ID}&specific_date=gte.${from}&specific_date=lte.${to}`),
-    api('GET', 'schedule', null, `?master_id=eq.${MASTER_ID}&specific_date=is.null`)
+    api('GET', 'schedule', null, `?master_id=eq.${MASTER_ID}&specific_date=is.null`),
+    api('GET', 'bookings', null, `?master_id=eq.${MASTER_ID}&booking_date=gte.${from}&booking_date=lte.${to}&status=neq.cancelled&select=booking_date,start_time,end_time`)
   ]);
 
-  bcalSchedule = {};
-  // Базовое расписание по дням недели
+  // Строим карту расписания
+  const excMap = {};
+  (exceptions || []).forEach(e => { if(e.specific_date) excMap[e.specific_date] = e; });
   const base = {};
-  (baseSchedule || []).forEach(s => base[s.day_of_week] = s);
-  // Исключения перекрывают базовое
-  (exceptions || []).forEach(e => { if(e.specific_date) bcalSchedule[e.specific_date] = e; });
+  (baseSchedule || []).forEach(s => { if(s.day_of_week !== null) base[s.day_of_week] = s; });
 
-  renderBcal(base);
+  // Группируем записи по датам
+  const bookedByDate = {};
+  (bookings || []).forEach(b => {
+    if(!bookedByDate[b.booking_date]) bookedByDate[b.booking_date] = [];
+    bookedByDate[b.booking_date].push({start: timeToMin(b.start_time), end: timeToMin(b.end_time)});
+  });
+
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+  const availableDates = new Set();
+  for(let d = new Date(y, m, 1); d <= last; d.setDate(d.getDate()+1)) {
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if(ds < todayStr) continue;
+
+    // Определяем рабочие часы
+    let workStart, workEnd;
+    const ex = excMap[ds];
+    if(ex) {
+      if(ex.is_day_off) continue;
+      workStart = timeToMin(ex.start_time);
+      workEnd = timeToMin(ex.end_time);
+    } else {
+      const b = base[d.getDay()];
+      if(!b || b.is_day_off) continue;
+      workStart = timeToMin(b.start_time);
+      workEnd = timeToMin(b.end_time);
+    }
+
+    const booked = bookedByDate[ds] || [];
+    const isToday = ds === todayStr;
+
+    // Проверяем есть ли хоть один свободный слот
+    for(let min = workStart; min + duration <= workEnd; min += 30) {
+      if(isToday && min < nowMin) continue; // убираем только прошедшие слоты
+      const end = min + duration;
+      const conflict = booked.some(b => min < b.end && end > b.start);
+      if(!conflict) { availableDates.add(ds); break; }
+    }
+  }
+
+  renderBcalWithAvailable(availableDates);
 }
 
-function renderBcal(base) {
+function renderBcalWithAvailable(availableDates) {
   const y = bcalDate.getFullYear(), m = bcalDate.getMonth();
   const first = new Date(y, m, 1), last = new Date(y, m+1, 0);
   const today = new Date(); today.setHours(0,0,0,0);
@@ -624,58 +679,43 @@ function renderBcal(base) {
 
   document.getElementById('bcal-grid').innerHTML = cells.map(({d, other}) => {
     const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const isPast = d < today;
     const isToday = d.getTime() === today.getTime();
     const isSelected = ds === selectedDate;
-
-    // Определяем доступность
-    let available = false;
-    if(!other && !isPast) {
-      const ex = bcalSchedule[ds];
-      if(ex) {
-        available = !ex.is_day_off;
-      } else {
-        const dow = d.getDay();
-        const b = base[dow];
-        available = b && !b.is_day_off;
-      }
-    }
+    const available = !other && availableDates.has(ds);
 
     let cls = 'bcal-day';
     if(other) cls += ' other';
-    if(isToday) cls += ' today';
+    if(isToday && !isSelected) cls += ' today';
     if(isSelected) cls += ' selected';
     else if(available) cls += ' available';
 
-    const dot = available && !isSelected ? '<div class="bcal-dot"></div>' : '';
+    const dot = available && !isSelected ? '<div class="bcal-dot"></div>' : (isSelected ? '<div class="bcal-dot"></div>' : '');
     const click = available ? `onclick="selectBcalDate('${ds}')"` : '';
 
-    return `<div class="${cls}" ${click}>
-      <div>${d.getDate()}</div>
-      ${dot}
-    </div>`;
+    return `<div class="${cls}" ${click}><div>${d.getDate()}</div>${dot}</div>`;
   }).join('');
 }
 
 function selectBcalDate(ds) {
   document.getElementById('f-date').value = ds;
-  // Перерисуем чтобы подсветить выбранную дату
-  const y = bcalDate.getFullYear(), m = bcalDate.getMonth();
-  const first = new Date(y, m, 1), last = new Date(y, m+1, 0);
-  const today = new Date(); today.setHours(0,0,0,0);
-  let startDow = first.getDay() || 7, cells = [];
-  for(let i=1;i<startDow;i++){const d=new Date(y,m,1-(startDow-i));cells.push({d,other:true});}
-  for(let i=1;i<=last.getDate();i++) cells.push({d:new Date(y,m,i),other:false});
-  while(cells.length%7!==0){const l=cells[cells.length-1].d;const d=new Date(l);d.setDate(l.getDate()+1);cells.push({d,other:true});}
-
-  document.querySelectorAll('.bcal-day').forEach((el, i) => {
-    const {d, other} = cells[i] || {};
-    if(!d) return;
-    const cellDs = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    if(cellDs === ds) { el.classList.add('selected'); el.classList.remove('available'); }
-    else if(el.classList.contains('selected')) { el.classList.remove('selected'); el.classList.add('available'); }
-  });
-
+  // Обновляем [y,m] из bcalDate чтобы не пересчитывать cells
+  const serviceId = document.getElementById('f-service').value;
+  if(serviceId) {
+    // Перерисуем выделение через loadBcalMonth (слоты тоже обновим)
+    const y = bcalDate.getFullYear(), m = bcalDate.getMonth();
+    const last = new Date(y, m+1, 0);
+    // Быстрый визуальный отклик
+    document.querySelectorAll('.bcal-day.selected').forEach(el => {
+      el.classList.remove('selected'); el.classList.add('available');
+    });
+    const allDays = document.querySelectorAll('.bcal-day.available, .bcal-day.selected');
+    allDays.forEach(el => {
+      if(el.querySelector('div')?.textContent == new Date(ds+'T12:00:00').getDate() &&
+         !el.classList.contains('other')) {
+        el.classList.add('selected'); el.classList.remove('available');
+      }
+    });
+  }
   loadSlots();
 }
 
