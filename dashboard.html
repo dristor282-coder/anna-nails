@@ -534,16 +534,21 @@ async function loadBookings(){
     api('GET','blacklist',null,`?master_id=eq.${master.id}&select=phone`)
   ]);
   const blPhones=new Set((bl||[]).map(b=>b.phone));
-  const past=isPast(ds),now=new Date();
-  const nowLocal=new Date(now.toLocaleString('en-US',{timeZone:userTZ}));
+  const now=new Date();
+  // Сравниваем даты как строки — это надёжнее чем Date объекты
+  const todayDs=fd(now);
+  const past=ds<todayDs;
+  const today=ds===todayDs;
   if(!data||data.length===0){
     list.innerHTML=past?'<div class="empty-state"><div class="emoji">🗓</div><p>Этот день уже прошёл</p></div>':'<div class="empty-state"><div class="emoji">📭</div><p>Нет записей на этот день</p></div>';
     return;
   }
   const statusLabel=s=>s==='pending'?'Ожидает':s==='confirmed'?'Подтверждено':'Отменено';
+  const nowH=now.getHours(),nowM=now.getMinutes();
   list.innerHTML=data.map(b=>{
-    const bTime=new Date(`${ds}T${b.start_time}`);
-    const bPast=past||(isToday(ds)&&bTime<nowLocal);
+    // Сравниваем время как строки HH:MM
+    const[bH,bM]=b.start_time.slice(0,5).split(':').map(Number);
+    const bPast=past||(today&&(bH<nowH||(bH===nowH&&bM<=nowM)));
     const isBl=blPhones.has(b.client_phone);
     const displayStatus=bPast&&b.status!=='cancelled'?'past':b.status;
     const displayLabel=bPast&&b.status!=='cancelled'?'Завершено':statusLabel(b.status);
@@ -624,11 +629,10 @@ async function renderSched(){
   }
 }
 function goDay(ds){
-  // Устанавливаем дату правильно без UTC сдвига
+  // Парсим дату вручную чтобы избежать UTC сдвига
   const[y,m,d]=ds.split('-').map(Number);
-  bookDate=new Date(y,m-1,d);
+  bookDate=new Date(y,m-1,d,12,0,0); // 12:00 чтобы не было проблем с летним временем
   document.getElementById('nav-date').textContent=fdr(bookDate);
-  // Переключаем меню на Записи
   document.querySelectorAll('.nav-item').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-bookings').classList.add('active');
