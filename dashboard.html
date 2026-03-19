@@ -538,13 +538,15 @@ async function loadBookings(){
   ]);
   const blPhones=new Set((bl||[]).map(b=>b.phone));
   const past=isPast(ds),now=new Date();
+  const nowLocal=new Date(now.toLocaleString('en-US',{timeZone:userTZ}));
   if(!data||data.length===0){
     list.innerHTML=past?'<div class="empty-state"><div class="emoji">🗓</div><p>Этот день уже прошёл</p></div>':'<div class="empty-state"><div class="emoji">📭</div><p>Нет записей на этот день</p></div>';
     return;
   }
   const statusLabel=s=>s==='pending'?'Ожидает':s==='confirmed'?'Подтверждено':'Отменено';
   list.innerHTML=data.map(b=>{
-    const bPast=past||(isToday(ds)&&new Date(`${ds}T${b.start_time}`)<now);
+    const bTime=new Date(`${ds}T${b.start_time}`);
+    const bPast=past||(isToday(ds)&&bTime<nowLocal);
     const isBl=blPhones.has(b.client_phone);
     const displayStatus=bPast&&b.status!=='cancelled'?'past':b.status;
     const displayLabel=bPast&&b.status!=='cancelled'?'Завершено':statusLabel(b.status);
@@ -624,7 +626,19 @@ async function renderSched(){
     content.innerHTML=`<div class="month-grid">${DAYS_W.map(d=>`<div class="month-header-cell">${d}</div>`).join('')}${cells.map(({d,other})=>{const ds=fd(d),count=counts[ds]||0,today=isToday(ds),past=isPast(ds);return`<div class="month-day ${today?'is-today':''} ${past&&!other?'is-past':''} ${other?'other-month':''}" onclick="goDay('${ds}')"><div class="day-num">${d.getDate()}</div>${Array(Math.min(count,5)).fill(null).map(()=>`<span class="month-dot ${past?'past-dot':''}"></span>`).join('')}${count>5?`<span style="font-size:.72rem;color:var(--mid)">+${count-5}</span>`:''}</div>`;}).join('')}</div>`;
   }
 }
-function goDay(ds){schedDate=new Date(ds+'T00:00:00');schedView='day';document.querySelectorAll('.view-tab').forEach((b,i)=>b.classList.toggle('active',i===0));renderSched();}
+function goDay(ds){
+  schedDate=new Date(ds+'T00:00:00');
+  schedView='day';
+  document.querySelectorAll('.view-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
+  renderSched();
+  // Также переключаем на страницу записей
+  bookDate=new Date(ds+'T00:00:00');
+  document.getElementById('nav-date').textContent=fdr(bookDate);
+  const bookBtn=document.querySelector('.nav-item');
+  showPage('bookings', bookBtn);
+  // Переключаем активный пункт меню
+  document.querySelectorAll('.nav-item').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+}
 
 async function loadServices(){
   const list=document.getElementById('services-list');
