@@ -133,17 +133,27 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 
 /* WORK HOURS */
 .work-hours-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-top:1rem}
-.work-day-card{background:var(--bg);border-radius:1rem;padding:1.4rem;border:0.5px solid var(--border)}
+.work-day-card{background:var(--bg);border-radius:1rem;padding:1.4rem;border:0.5px solid var(--border);transition:border-color 0.2s}
+.work-day-card.day-off{opacity:0.6}
 .work-day-card h4{font-size:1rem;font-weight:500;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
 .toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
 .toggle-switch input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:#DDD0CE;border-radius:12px;transition:0.2s}
+.toggle-slider{position:absolute;inset:0;background:var(--mid);border-radius:12px;transition:0.2s;opacity:0.4}
 .toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.2s}
-.toggle-switch input:checked+.toggle-slider{background:var(--rose)}
+.toggle-switch input:checked+.toggle-slider{background:var(--rose);opacity:1}
 .toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}
 .time-row{display:flex;gap:0.75rem;align-items:center;font-size:0.88rem;color:var(--mid)}
-.time-row input[type=time]{padding:0.4rem 0.6rem;border:0.5px solid #DDD0CE;border-radius:0.5rem;font-family:var(--font-sans);font-size:0.88rem;color:var(--dark);outline:none}
+.time-row input[type=time]{padding:0.4rem 0.6rem;border:0.5px solid var(--border);border-radius:0.5rem;font-family:var(--font-sans);font-size:0.88rem;color:var(--dark);background:var(--bg);outline:none;transition:border-color 0.2s}
 .time-row input[type=time]:focus{border-color:var(--rose)}
+.day-label{font-size:0.75rem;margin-left:0.5rem;padding:0.2rem 0.5rem;border-radius:1rem;font-weight:400}
+.day-label.active{background:var(--green-light);color:var(--green)}
+.day-label.inactive{background:var(--rose-light);color:var(--rose)}
+
+/* TOAST NOTIFICATION */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--dark);color:var(--cream);padding:0.85rem 1.5rem;border-radius:1rem;font-size:0.9rem;z-index:9999;transform:translateY(100px);opacity:0;transition:all 0.3s;pointer-events:none;display:flex;align-items:center;gap:0.5rem}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--green);color:#fff}
+.toast.error{background:#E24B4A;color:#fff}
 
 /* STATS */
 .stats-section{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
@@ -195,6 +205,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 <body>
 
 <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙 Тёмная</button>
+<div class="toast" id="toast"></div>
 
 <div id="login-screen">
   <div class="login-box">
@@ -278,9 +289,9 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     <div class="page" id="page-workhours">
       <div class="page-title">Рабочие <em>часы</em></div>
       <div class="page-sub">Настройте расписание по дням недели</div>
-      <div style="background:#fff;border-radius:1rem;padding:1.4rem;border:0.5px solid rgba(200,114,106,0.1);margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem">
+      <div style="background:var(--bg);border-radius:1rem;padding:1.4rem;border:0.5px solid var(--border);margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem">
         <div style="font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);white-space:nowrap">🌍 Часовой пояс</div>
-        <select id="tz-select" onchange="saveTZ()" style="flex:1;padding:0.6rem 1rem;border:0.5px solid #DDD0CE;border-radius:0.75rem;font-family:var(--font-sans);font-size:0.95rem;color:var(--dark);outline:none">
+        <select id="tz-select" onchange="saveTZ()" style="flex:1;padding:0.6rem 1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:0.95rem;color:var(--dark);background:var(--bg);outline:none">
           <option value="Europe/Moscow">Москва (UTC+3)</option>
           <option value="Europe/Samara">Самара (UTC+4)</option>
           <option value="Asia/Yekaterinburg">Екатеринбург (UTC+5)</option>
@@ -316,7 +327,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
         <div class="stats-big-card"><div class="num" id="s-total">0</div><div class="lbl">Всего записей</div></div>
         <div class="stats-big-card"><div class="num" id="s-clients">0</div><div class="lbl">Уникальных клиентов</div></div>
       </div>
-      <div style="background:#fff;border-radius:1rem;padding:1.6rem;border:0.5px solid rgba(200,114,106,0.1)">
+      <div style="background:var(--bg);border-radius:1rem;padding:1.6rem;border:0.5px solid var(--border)">
         <div style="font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:1rem">Популярные услуги</div>
         <div class="chart-bar-wrap" id="services-chart"><div class="loading">Загрузка...</div></div>
       </div>
@@ -574,6 +585,7 @@ async function saveReschedule(){
   const endMin=timeToMin(time)+duration;
   await api('PATCH',`bookings?id=eq.${id}`,{booking_date:date,start_time:time,end_time:minToTime(endMin)});
   closeModal('modal-reschedule');loadBookings();
+  showToast('Запись перенесена!');
 }
 
 async function renderSched(){
@@ -647,12 +659,13 @@ async function saveService(){
   const name=document.getElementById('s-name').value;
   const price=parseInt(document.getElementById('s-price').value);
   const duration=parseInt(document.getElementById('s-duration').value);
-  if(!name||!price||!duration){alert('Заполните все поля');return;}
+  if(!name||!price||!duration){showToast('Заполните все поля','error');return;}
   if(id){await api('PATCH',`services?id=eq.${id}`,{name,price,duration});}
   else{await api('POST','services',{master_id:master.id,name,price,duration});}
   closeModal('modal-service');loadServices();
+  showToast(id?'Услуга обновлена!':'Услуга добавлена!');
 }
-async function delSvc(id){if(!confirm('Удалить услугу?'))return;await api('DELETE',`services?id=eq.${id}`);loadServices();}
+async function delSvc(id){if(!confirm('Удалить услугу?'))return;await api('DELETE',`services?id=eq.${id}`);loadServices();showToast('Услуга удалена');}
 
 async function loadWorkHours(){
   const grid=document.getElementById('work-hours-grid');
@@ -661,8 +674,42 @@ async function loadWorkHours(){
   grid.innerHTML=DAYS_FULL_W.map((day,i)=>{
     const dow=i+1===7?0:i+1;
     const s=schedule[dow];
-    return`<div class="work-day-card"><h4>${day}<label class="toggle-switch"><input type="checkbox" id="wh-active-${dow}" ${s&&!s.is_day_off?'checked':''}><span class="toggle-slider"></span></label></h4><div class="time-row"><span>Начало</span><input type="time" id="wh-start-${dow}" value="${s?s.start_time.slice(0,5):'09:00'}"><span>Конец</span><input type="time" id="wh-end-${dow}" value="${s?s.end_time.slice(0,5):'20:00'}"></div></div>`;
+    // По умолчанию включено если нет данных или явно не выключено
+    const isActive=s?!s.is_day_off:true;
+    return`<div class="work-day-card ${isActive?'':'day-off'}" id="wdc-${dow}">
+      <h4>${day}
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <span class="day-label ${isActive?'active':'inactive'}" id="wh-label-${dow}">${isActive?'Рабочий':'Выходной'}</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="wh-active-${dow}" ${isActive?'checked':''} onchange="toggleWorkDay(${dow})">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </h4>
+      <div class="time-row">
+        <span>Начало</span>
+        <input type="time" id="wh-start-${dow}" value="${s?s.start_time.slice(0,5):'09:00'}">
+        <span>Конец</span>
+        <input type="time" id="wh-end-${dow}" value="${s?s.end_time.slice(0,5):'20:00'}">
+      </div>
+    </div>`;
   }).join('');
+}
+
+function toggleWorkDay(dow){
+  const active=document.getElementById(`wh-active-${dow}`).checked;
+  const card=document.getElementById(`wdc-${dow}`);
+  const label=document.getElementById(`wh-label-${dow}`);
+  card.classList.toggle('day-off',!active);
+  label.textContent=active?'Рабочий':'Выходной';
+  label.className=`day-label ${active?'active':'inactive'}`;
+}
+
+function showToast(msg, type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=(type==='success'?'✓ ':'✕ ')+msg;
+  t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 async function saveWorkHours(){
@@ -679,7 +726,7 @@ async function saveWorkHours(){
       await api('POST','schedule',{master_id:master.id,day_of_week:dow,start_time:start,end_time:end,is_day_off:!active});
     }
   }
-  alert('Рабочие часы сохранены!');
+  showToast('Рабочие часы сохранены!');
 }
 
 async function loadClients(){
@@ -761,6 +808,7 @@ async function saveBooking(){
   const[h,m]=t.split(':').map(Number),em=h*60+m+(svc?.duration||60);
   await api('POST','bookings',{master_id:master.id,service_id:sId,client_name:document.getElementById('b-name').value,client_phone:document.getElementById('b-phone').value,booking_date:document.getElementById('b-date').value,start_time:t,end_time:`${String(Math.floor(em/60)).padStart(2,'0')}:${String(em%60).padStart(2,'0')}`,comment:document.getElementById('b-comment').value,status:'confirmed'});
   closeModal('modal-booking');loadBookings();loadDashStats();
+  showToast('Запись добавлена!');
 }
 
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
