@@ -93,7 +93,22 @@ section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
 .reviewer-name{font-size:1rem;font-weight:500}
 .reviewer-sub{font-size:0.9rem;color:var(--mid)}
 
-.booking-section{background:var(--rose-light);border-radius:2rem;padding:4rem 3rem;text-align:center;margin:2rem 0}
+.booking-calendar{background:var(--cream);border-radius:1rem;padding:1.25rem;border:0.5px solid var(--border)}
+.bcal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.bcal-nav{background:none;border:0.5px solid var(--border);border-radius:0.5rem;padding:0.35rem 0.75rem;cursor:pointer;color:var(--mid);font-size:1rem;font-family:var(--font-sans);transition:all 0.15s}
+.bcal-nav:hover{border-color:var(--rose);color:var(--rose)}
+.bcal-title{font-family:var(--font-serif);font-size:1.2rem;color:var(--dark)}
+.bcal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:0.2rem;text-align:center;margin-bottom:0.4rem}
+.bcal-dow{font-size:0.82rem;color:var(--mid);padding:0.25rem}
+.bcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0.2rem;text-align:center}
+.bcal-day{padding:0.4rem 0.2rem;border-radius:0.5rem;font-size:0.95rem;cursor:default;color:var(--mid);opacity:0.3;line-height:1.4}
+.bcal-day.available{cursor:pointer;color:var(--dark);opacity:1}
+.bcal-day.available:hover{background:var(--rose-light);color:var(--rose)}
+.bcal-day.selected{background:var(--rose);color:#fff !important;opacity:1}
+.bcal-day.today{font-weight:500}
+.bcal-day.other{opacity:0.15}
+.bcal-dot{width:6px;height:6px;border-radius:50%;background:#4A9B6F;margin:2px auto 0}
+.bcal-day.selected .bcal-dot{background:#fff}
 .booking-section p{color:var(--mid);margin-bottom:2.5rem;font-size:1rem}
 .booking-form{background:var(--bg);border-radius:1.5rem;padding:2.5rem;max-width:580px;margin:0 auto;text-align:left}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
@@ -257,7 +272,19 @@ nav ul{display:none}
       </div>
       <div class="form-group">
         <label>Дата</label>
-        <input type="date" id="f-date" onchange="loadSlots()">
+        <input type="hidden" id="f-date">
+        <div class="booking-calendar">
+          <div class="bcal-header">
+            <button type="button" onclick="bcalPrev()" class="bcal-nav">←</button>
+            <span id="bcal-label" class="bcal-title"></span>
+            <button type="button" onclick="bcalNext()" class="bcal-nav">→</button>
+          </div>
+          <div class="bcal-days">
+            <div class="bcal-dow">Пн</div><div class="bcal-dow">Вт</div><div class="bcal-dow">Ср</div>
+            <div class="bcal-dow">Чт</div><div class="bcal-dow">Пт</div><div class="bcal-dow">Сб</div><div class="bcal-dow">Вс</div>
+          </div>
+          <div id="bcal-grid" class="bcal-grid"></div>
+        </div>
       </div>
       <div class="form-group" id="slots-group" style="display:none">
         <label>Доступное время</label>
@@ -362,6 +389,8 @@ async function loadServices() {
 
   select.innerHTML = '<option value="">Выберите услугу</option>' +
     data.map(s => `<option value="${s.id}">${s.name} — ${s.price.toLocaleString()} ₽ (${s.duration} мин)</option>`).join('');
+
+  await initBcal();
 }
 
 function selectService(id) {
@@ -542,8 +571,6 @@ function formatPhone(val) {
   return r;
 }
 
-const minDate = new Date().toISOString().split('T')[0];
-document.getElementById('f-date').min = minDate;
 
 function toggleTheme(){
   const dark=document.body.classList.toggle('dark');
@@ -552,6 +579,119 @@ function toggleTheme(){
 }
 const savedTheme=localStorage.getItem('nail_theme');
 if(savedTheme==='dark'){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='☀️';}
+
+let bcalDate = new Date();
+let bcalSchedule = {};
+
+async function initBcal() {
+  await loadBcalMonth();
+}
+
+async function loadBcalMonth() {
+  const y = bcalDate.getFullYear(), m = bcalDate.getMonth();
+  document.getElementById('bcal-label').textContent = `${['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][m]} ${y}`;
+
+  const from = `${y}-${String(m+1).padStart(2,'0')}-01`;
+  const last = new Date(y, m+1, 0);
+  const to = `${y}-${String(m+1).padStart(2,'0')}-${String(last.getDate()).padStart(2,'0')}`;
+
+  // Загружаем исключения и базовое расписание за месяц
+  const [exceptions, baseSchedule] = await Promise.all([
+    api('GET', 'schedule', null, `?master_id=eq.${MASTER_ID}&specific_date=gte.${from}&specific_date=lte.${to}`),
+    api('GET', 'schedule', null, `?master_id=eq.${MASTER_ID}&specific_date=is.null`)
+  ]);
+
+  bcalSchedule = {};
+  // Базовое расписание по дням недели
+  const base = {};
+  (baseSchedule || []).forEach(s => base[s.day_of_week] = s);
+  // Исключения перекрывают базовое
+  (exceptions || []).forEach(e => { if(e.specific_date) bcalSchedule[e.specific_date] = e; });
+
+  renderBcal(base);
+}
+
+function renderBcal(base) {
+  const y = bcalDate.getFullYear(), m = bcalDate.getMonth();
+  const first = new Date(y, m, 1), last = new Date(y, m+1, 0);
+  const today = new Date(); today.setHours(0,0,0,0);
+  let startDow = first.getDay() || 7, cells = [];
+  for(let i=1;i<startDow;i++){const d=new Date(y,m,1-(startDow-i));cells.push({d,other:true});}
+  for(let i=1;i<=last.getDate();i++) cells.push({d:new Date(y,m,i),other:false});
+  while(cells.length%7!==0){const l=cells[cells.length-1].d;const d=new Date(l);d.setDate(l.getDate()+1);cells.push({d,other:true});}
+
+  const selectedDate = document.getElementById('f-date').value;
+
+  document.getElementById('bcal-grid').innerHTML = cells.map(({d, other}) => {
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const isPast = d < today;
+    const isToday = d.getTime() === today.getTime();
+    const isSelected = ds === selectedDate;
+
+    // Определяем доступность
+    let available = false;
+    if(!other && !isPast) {
+      const ex = bcalSchedule[ds];
+      if(ex) {
+        available = !ex.is_day_off;
+      } else {
+        const dow = d.getDay();
+        const b = base[dow];
+        available = b && !b.is_day_off;
+      }
+    }
+
+    let cls = 'bcal-day';
+    if(other) cls += ' other';
+    if(isToday) cls += ' today';
+    if(isSelected) cls += ' selected';
+    else if(available) cls += ' available';
+
+    const dot = available && !isSelected ? '<div class="bcal-dot"></div>' : '';
+    const click = available ? `onclick="selectBcalDate('${ds}')"` : '';
+
+    return `<div class="${cls}" ${click}>
+      <div>${d.getDate()}</div>
+      ${dot}
+    </div>`;
+  }).join('');
+}
+
+function selectBcalDate(ds) {
+  document.getElementById('f-date').value = ds;
+  // Перерисуем чтобы подсветить выбранную дату
+  const y = bcalDate.getFullYear(), m = bcalDate.getMonth();
+  const first = new Date(y, m, 1), last = new Date(y, m+1, 0);
+  const today = new Date(); today.setHours(0,0,0,0);
+  let startDow = first.getDay() || 7, cells = [];
+  for(let i=1;i<startDow;i++){const d=new Date(y,m,1-(startDow-i));cells.push({d,other:true});}
+  for(let i=1;i<=last.getDate();i++) cells.push({d:new Date(y,m,i),other:false});
+  while(cells.length%7!==0){const l=cells[cells.length-1].d;const d=new Date(l);d.setDate(l.getDate()+1);cells.push({d,other:true});}
+
+  document.querySelectorAll('.bcal-day').forEach((el, i) => {
+    const {d, other} = cells[i] || {};
+    if(!d) return;
+    const cellDs = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if(cellDs === ds) { el.classList.add('selected'); el.classList.remove('available'); }
+    else if(el.classList.contains('selected')) { el.classList.remove('selected'); el.classList.add('available'); }
+  });
+
+  loadSlots();
+}
+
+async function bcalPrev() {
+  bcalDate.setMonth(bcalDate.getMonth() - 1);
+  document.getElementById('f-date').value = '';
+  document.getElementById('slots-group').style.display = 'none';
+  await loadBcalMonth();
+}
+
+async function bcalNext() {
+  bcalDate.setMonth(bcalDate.getMonth() + 1);
+  document.getElementById('f-date').value = '';
+  document.getElementById('slots-group').style.display = 'none';
+  await loadBcalMonth();
+}
 
 loadServices();
 </script>
