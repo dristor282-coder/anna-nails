@@ -426,10 +426,7 @@ const MON=['Январь','Февраль','Март','Апрель','Май','�
 const MON_G=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 
 let master=null,bookDate=new Date(),services=[],schedView='week',schedDate=new Date(),allClients=[],userTZ='Europe/Moscow';
-const fd=d=>{
-  const tz=new Date(d.toLocaleString('en-US',{timeZone:userTZ}));
-  return`${tz.getFullYear()}-${String(tz.getMonth()+1).padStart(2,'0')}-${String(tz.getDate()).padStart(2,'0')}`;
-};
+const fd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const fdr=d=>`${DAYS_S[d.getDay()]}, ${d.getDate()} ${MON_G[d.getMonth()]}`;
 const todayStr=()=>fd(new Date());
 const isPast=ds=>ds<todayStr();
@@ -627,17 +624,15 @@ async function renderSched(){
   }
 }
 function goDay(ds){
-  schedDate=new Date(ds+'T00:00:00');
-  schedView='day';
-  document.querySelectorAll('.view-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
-  renderSched();
-  // Также переключаем на страницу записей
-  bookDate=new Date(ds+'T00:00:00');
+  // Устанавливаем дату правильно без UTC сдвига
+  const[y,m,d]=ds.split('-').map(Number);
+  bookDate=new Date(y,m-1,d);
   document.getElementById('nav-date').textContent=fdr(bookDate);
-  const bookBtn=document.querySelector('.nav-item');
-  showPage('bookings', bookBtn);
-  // Переключаем активный пункт меню
-  document.querySelectorAll('.nav-item').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+  // Переключаем меню на Записи
+  document.querySelectorAll('.nav-item').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-bookings').classList.add('active');
+  loadBookings();
 }
 
 async function loadServices(){
