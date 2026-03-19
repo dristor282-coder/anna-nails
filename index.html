@@ -264,7 +264,8 @@ nav ul{display:none}
     <div class="success-msg" id="success-msg">
       <div class="emoji">💅</div>
       <h4>Заявка отправлена!</h4>
-      <p>Мастер свяжется с вами для подтверждения записи</p>
+      <p id="success-details"></p>
+      <p style="margin-top:0.5rem">Мастер свяжется с вами для подтверждения</p>
     </div>
   </div>
 </section>
@@ -461,6 +462,9 @@ async function submitBooking() {
   if (result) {
     document.getElementById('booking-form').style.display = 'none';
     document.getElementById('success-msg').style.display = 'block';
+    const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+    const [y,m,d] = date.split('-').map(Number);
+    document.getElementById('success-details').textContent = `${d} ${months[m-1]} в ${time}`;
   } else {
     btn.disabled = false;
     btn.textContent = 'Записаться';
