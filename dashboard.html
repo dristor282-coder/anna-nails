@@ -838,10 +838,12 @@ function renderExcCal(){
     const ds=fd(d);
     const ex=excData[ds];
     const isToday=ds===today;
+    const isPastDay=!isToday&&ds<today;
+    const disabled=other||isPastDay;
     let dot='<div style="height:10px"></div>';
     if(ex) dot=`<div style="width:8px;height:8px;border-radius:50%;background:${ex.is_day_off?'#E24B4A':'#4A9B6F'};margin:2px auto 0"></div>`;
-    return`<div onclick="${other?'':` openDaySettings('${ds}')`}" style="padding:0.4rem 0.2rem;border-radius:0.5rem;cursor:${other?'default':'pointer'};opacity:${other?0.2:1};background:${isToday?'var(--rose-light)':'transparent'};transition:background 0.15s" ${!other?`onmouseover="this.style.background='var(--rose-light)'" onmouseout="this.style.background='${isToday?'var(--rose-light)':'transparent'}'"`:''}>
-      <div style="font-size:0.9rem;font-weight:${isToday?'500':'400'};color:${isToday?'var(--rose)':'var(--dark)'}">${d.getDate()}</div>
+    return`<div onclick="${disabled?'':` openDaySettings('${ds}')`}" style="padding:0.4rem 0.2rem;border-radius:0.5rem;cursor:${disabled?'default':'pointer'};opacity:${other?0.15:isPastDay?0.35:1};background:${isToday?'var(--rose-light)':'transparent'};transition:background 0.15s" ${!disabled?`onmouseover="this.style.background='var(--rose-light)'" onmouseout="this.style.background='${isToday?'var(--rose-light)':'transparent'}'"`:''}>
+      <div style="font-size:0.9rem;font-weight:${isToday?'500':'400'};color:${isToday?'var(--rose)':isPastDay?'var(--mid)':'var(--dark)'}">${d.getDate()}</div>
       ${dot}
     </div>`;
   }).join('');
@@ -877,37 +879,41 @@ async function saveDaySettings(){
   const start=document.getElementById('day-start').value||'09:00';
   const end=document.getElementById('day-end').value||'20:00';
 
-  // Сохраняем текущую дату
-  await saveExceptionForDate(ds,isOff,start,end);
-
-  // Копируем на выбранные дни недели
   const copyDows=[...document.querySelectorAll('.copy-day-cb:checked')].map(cb=>parseInt(cb.value));
+
+  // Собираем все даты которые нужно сохранить
+  const datesToSave=[ds];
   if(copyDows.length>0){
-    // Найдём все даты в текущем месяце с нужными днями недели
     const[y,m]=ds.split('-').map(Number);
     const from=new Date(y,m-1,1),to=new Date(y,m,0);
+    const today=fd(new Date());
     for(let d=new Date(from);d<=to;d.setDate(d.getDate()+1)){
       const dds=fd(d);
-      if(dds!==ds&&copyDows.includes(d.getDay())){
-        await saveExceptionForDate(dds,isOff,start,end);
-      }
+      if(dds!==ds&&dds>=today&&copyDows.includes(d.getDay())) datesToSave.push(dds);
     }
-    showToast(`Скопировано на ${copyDows.length} дн. недели!`);
-  } else {
-    showToast('Расписание сохранено!');
   }
 
+  // Загружаем все существующие записи одним запросом
+  const minDate=datesToSave.reduce((a,b)=>a<b?a:b);
+  const maxDate=datesToSave.reduce((a,b)=>a>b?a:b);
+  const existing=await api('GET','schedule',null,
+    `?master_id=eq.${master.id}&specific_date=gte.${minDate}&specific_date=lte.${maxDate}&specific_date=not.is.null`);
+  const existingMap={};
+  (existing||[]).forEach(e=>existingMap[e.specific_date]=e);
+
+  // Сохраняем все параллельно
+  await Promise.all(datesToSave.map(dds=>{
+    const ex=existingMap[dds];
+    if(ex){
+      return api('PATCH',`schedule?id=eq.${ex.id}`,{is_day_off:isOff,start_time:isOff?'09:00':start,end_time:isOff?'20:00':end});
+    } else {
+      return api('POST','schedule',{master_id:master.id,specific_date:dds,start_time:isOff?'09:00':start,end_time:isOff?'20:00':end,is_day_off:isOff});
+    }
+  }));
+
+  showToast(copyDows.length>0?`Сохранено для ${datesToSave.length} дат!`:'Расписание сохранено!');
   closeModal('modal-day-settings');
   await loadExceptions();
-}
-
-async function saveExceptionForDate(ds,isOff,start,end){
-  const existing=await api('GET','schedule',null,`?master_id=eq.${master.id}&specific_date=eq.${ds}`);
-  if(existing&&existing.length>0){
-    await api('PATCH',`schedule?id=eq.${existing[0].id}`,{is_day_off:isOff,start_time:isOff?'09:00':start,end_time:isOff?'20:00':end});
-  } else {
-    await api('POST','schedule',{master_id:master.id,specific_date:ds,start_time:isOff?'09:00':start,end_time:isOff?'20:00':end,is_day_off:isOff});
-  }
 }
 
 function excCalPrev(){excCalDate.setMonth(excCalDate.getMonth()-1);loadExceptions();}
