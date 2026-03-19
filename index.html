@@ -380,6 +380,23 @@ async function loadSlots() {
   selectedSlot = null;
   document.getElementById('f-time').value = '';
 
+  // Проверяем рабочий день — день недели (0=вс, 1=пн, ...)
+  const [y, m, d] = date.split('-').map(Number);
+  const dateObj = new Date(y, m - 1, d);
+  const dow = dateObj.getDay(); // 0=вс
+
+  const scheduleData = await api('GET', 'schedule', null,
+    `?master_id=eq.${MASTER_ID}&day_of_week=eq.${dow}&specific_date=is.null`);
+
+  // Если день выключен или нет настроек — не показываем слоты
+  if (!scheduleData || scheduleData.length === 0 || scheduleData[0].is_day_off) {
+    slotsGrid.innerHTML = '<span class="slots-empty">Этот день не рабочий</span>';
+    return;
+  }
+
+  const workStart = timeToMin(scheduleData[0].start_time);
+  const workEnd = timeToMin(scheduleData[0].end_time);
+
   const existingBookings = await api('GET', 'bookings', null,
     `?master_id=eq.${MASTER_ID}&booking_date=eq.${date}&status=neq.cancelled&select=start_time,end_time`);
 
@@ -389,11 +406,11 @@ async function loadSlots() {
   }));
 
   const now = new Date();
-  const today = now.toISOString().split('T')[0];
+  const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const nowMin = today === date ? now.getHours() * 60 + now.getMinutes() : 0;
 
   const slots = [];
-  for (let min = WORK_START * 60; min + service.duration <= WORK_END * 60; min += 30) {
+  for (let min = workStart; min + service.duration <= workEnd; min += 30) {
     if (min <= nowMin) continue;
     const end = min + service.duration;
     const conflict = booked.some(b => min < b.end && end > b.start);
