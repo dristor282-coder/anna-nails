@@ -279,9 +279,9 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .visit-price{color:var(--rose);font-weight:500}
 
 /* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.open{display:flex}
-.modal{background:var(--bg);border-radius:1.5rem;padding:2.25rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal{background:var(--bg);border-radius:1.5rem;padding:2.25rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative}
 .modal h3{font-family:var(--font-serif);font-size:clamp(1.2rem, 2vw, 1.7rem);font-weight:300;margin-bottom:1.5rem}
 .form-group{margin-bottom:1rem}
 .form-group label{display:block;font-size:1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.4rem}
@@ -536,7 +536,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
       <div class="form-group">
         <label>Длительность</label>
         <div style="display:flex;gap:0.5rem;align-items:center">
-          <input type="number" id="s-duration-val" placeholder="60" style="flex:1;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none">
+          <input type="number" id="s-duration-val" placeholder="60" min="1" style="flex:1;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none;-webkit-appearance:none">
           <select id="s-duration-unit" style="padding:0.8rem 0.75rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none">
             <option value="min">мин</option>
             <option value="hour">час</option>
