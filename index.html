@@ -657,13 +657,10 @@ function updateClientUI(){
 async function sendSmsCode(phone){
   const code = String(Math.floor(1000 + Math.random() * 9000));
   const cleanPhone = phone.replace(/\D/g,'');
-  const msg = encodeURIComponent(`Ваш код подтверждения: ${code}`);
-  // tst=1 — тестовый режим, SMS не отправляется
-  await fetch(`https://smsc.ru/sys/send.php?login=${SMSC_LOGIN}&psw=${encodeURIComponent(SMSC_PASS)}&phones=${cleanPhone}&mes=${msg}&fmt=3&tst=1`, {mode:'no-cors'});
   // Сохраняем код в Supabase
   const expires = new Date(Date.now() + 5*60*1000).toISOString();
   await api('POST','sms_codes',{phone:cleanPhone,code,expires_at:expires});
-  // Показываем код на экране в тестовом режиме
+  // Показываем код на экране (тестовый режим — SMS не отправляется)
   const hint = document.getElementById('sms-test-hint');
   if(hint) hint.textContent = `🧪 Тест: код ${code}`;
   return code;
