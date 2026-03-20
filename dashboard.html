@@ -622,7 +622,10 @@ const isPast=ds=>ds<todayStr();
 const isToday=ds=>ds===todayStr();
 
 async function api(method,table,body=null,q=''){
-  const r=await fetch(`${SURL}/rest/v1/${table}${q}`,{method,headers:{'apikey':SKEY,'Authorization':`Bearer ${SKEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
+  const headers={'apikey':SKEY,'Authorization':`Bearer ${SKEY}`,'Content-Type':'application/json'};
+  if(method==='POST') headers['Prefer']='return=representation';
+  if(method==='PATCH') headers['Prefer']='return=representation';
+  const r=await fetch(`${SURL}/rest/v1/${table}${q}`,{method,headers,body:body?JSON.stringify(body):null});
   if(!r.ok)return null;const t=await r.text();return t?JSON.parse(t):null;
 }
 
