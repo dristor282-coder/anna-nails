@@ -20,6 +20,8 @@ body.dark{
   --bg:#231E1C;--bg2:#1A1614;--border:rgba(200,114,106,0.2);
   --rose-light:#3D2825;--green-light:#1A2E24;--orange-light:#2E1E0F;
 }
+body.dark input,body.dark select,body.dark textarea{color:var(--dark)!important;background:var(--bg)!important}
+body.dark input::placeholder,body.dark textarea::placeholder{color:var(--mid)!important}
 body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-height:100vh;font-size:16px;transition:background 0.2s,color 0.2s;-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 .theme-btn{position:fixed;top:1rem;right:1rem;z-index:200;background:var(--bg);border:0.5px solid var(--border);border-radius:2rem;padding:0.4rem 0.9rem;cursor:pointer;font-size:1rem;font-family:var(--font-sans);color:var(--dark);transition:all 0.2s}
 .theme-btn:hover{border-color:var(--rose);color:var(--rose)}
@@ -536,8 +538,8 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
       <div class="form-group">
         <label>Длительность</label>
         <div style="display:flex;gap:0.5rem;align-items:center">
-          <input type="number" id="s-duration-val" placeholder="60" min="1" style="flex:1;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none;-webkit-appearance:none">
-          <select id="s-duration-unit" style="padding:0.8rem 0.75rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none">
+          <input type="number" id="s-duration-val" placeholder="60" min="1" style="flex:1;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark) !important;background:var(--bg);outline:none;-webkit-appearance:none;-moz-appearance:textfield">
+          <select id="s-duration-unit" style="padding:0.8rem 0.75rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark) !important;background:var(--bg);outline:none">
             <option value="min">мин</option>
             <option value="hour">час</option>
           </select>
