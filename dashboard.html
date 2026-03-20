@@ -34,7 +34,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .login-btn:hover{background:var(--rose-dark)}
 .login-error{color:#E24B4A;font-size:1rem;margin-top:0.5rem;display:none}
 #app{display:none;min-height:100vh}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--bg);border-right:0.5px solid var(--border);padding:1.5rem 1rem;display:flex;flex-direction:column;overflow-y:auto}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--bg);border-right:0.5px solid var(--border);padding:1.5rem 1rem;display:flex;flex-direction:column;overflow-y:auto;transition:transform 0.3s;z-index:100}
 .sidebar-logo{font-family:var(--font-serif);font-size:clamp(1.1rem, 2vw, 1.5rem);font-weight:300;margin-bottom:0.25rem;padding:0 0.5rem}
 .sidebar-logo span{color:var(--rose);font-style:italic}
 .sidebar-master{font-size:1rem;color:var(--mid);padding:0 0.5rem;margin-bottom:1.5rem}
@@ -45,7 +45,27 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .sidebar-bottom{margin-top:auto;padding-top:1rem}
 .logout-btn{display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0.85rem;border-radius:0.75rem;cursor:pointer;font-size:1rem;color:var(--mid);border:none;background:none;width:100%;font-family:var(--font-sans)}
 .logout-btn:hover{color:#E24B4A}
-.main{margin-left:240px;padding:2.5rem;min-height:100vh}
+.main{margin-left:240px;padding:2.5rem;min-height:100vh;transition:margin-left 0.3s}
+.sidebar.collapsed{transform:translateX(-240px)}
+.main.expanded{margin-left:0}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:99}
+.sidebar-overlay.show{display:block}
+.menu-btn{position:fixed;top:1rem;left:1rem;z-index:101;background:var(--bg);border:0.5px solid var(--border);border-radius:0.75rem;width:40px;height:40px;display:none;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-240px)}
+  .main{margin-left:0;padding:1.25rem;padding-top:4rem}
+  .menu-btn{display:flex}
+  .sidebar.open{transform:translateX(0)}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .week-grid{grid-template-columns:repeat(4,1fr)}
+  .booking-item{grid-template-columns:70px 1fr;gap:0.5rem}
+  .booking-actions{grid-column:1/-1}
+  .form-row{grid-template-columns:1fr}
+  .stats-section{grid-template-columns:1fr}
+  .services-grid{grid-template-columns:1fr}
+  .work-hours-grid{grid-template-columns:1fr}
+}
 .page{display:none}
 .page.active{display:block}
 .page-title{font-family:var(--font-serif);font-size:clamp(1.6rem, 3.5vw, 2.4rem);font-weight:300;margin-bottom:0.25rem}
@@ -213,6 +233,8 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 
 <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙 Тёмная</button>
 <div class="toast" id="toast"></div>
+<button class="menu-btn" id="menu-btn" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div id="login-screen">
   <div class="login-box">
@@ -226,8 +248,11 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 </div>
 
 <div id="app">
-  <div class="sidebar">
-    <div class="sidebar-logo">Nail <span>Panel</span></div>
+  <div class="sidebar" id="sidebar">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 0.5rem;margin-bottom:0.25rem">
+      <div class="sidebar-logo">Nail <span>Panel</span></div>
+      <button onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--mid);padding:0.25rem">☰</button>
+    </div>
     <div class="sidebar-master" id="master-name">Загрузка...</div>
     <button class="nav-item active" onclick="showPage('bookings',this)"><span class="nav-icon">📅</span> Записи</button>
     <button class="nav-item" onclick="showPage('schedule',this)"><span class="nav-icon">🗓</span> Расписание</button>
@@ -568,7 +593,9 @@ checkSession();
 function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');btn.classList.add('active');
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(window.innerWidth<=768) closeSidebar();
   if(name==='bookings')loadBookings();
   if(name==='services')loadServices();
   if(name==='schedule')renderSched();
@@ -1050,6 +1077,25 @@ async function saveBooking(){
 
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+
+function toggleSidebar(){
+  const sidebar=document.getElementById('sidebar');
+  const main=document.querySelector('.main');
+  const overlay=document.getElementById('sidebar-overlay');
+  const isMobile=window.innerWidth<=768;
+  if(isMobile){
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  } else {
+    sidebar.classList.toggle('collapsed');
+    main.classList.toggle('expanded');
+  }
+}
+
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
 
 function toggleTheme(){
   const dark=document.body.classList.toggle('dark');
