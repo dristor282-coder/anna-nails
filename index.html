@@ -69,9 +69,19 @@ section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
 .service-icon{width:44px;height:44px;background:var(--rose-light);border-radius:0.75rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:clamp(1rem, 1.5vw, 1.3rem)}
 .service-card h3{font-family:var(--font-serif);font-size:1.25rem;font-weight:400;margin-bottom:0.5rem}
 .service-card p{font-size:1rem;color:var(--mid);line-height:1.6}
+.service-desc{font-size:0.95rem;color:var(--mid);line-height:1.6;font-family:var(--font-sans);margin-top:0.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .service-price{margin-top:1rem;font-size:1rem;font-weight:500;color:var(--rose)}
 .service-duration{font-size:1rem;color:var(--mid);margin-top:0.25rem}
 .services-loading{text-align:center;padding:3rem;color:var(--mid);font-size:1rem}
+.svc-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:flex-end;justify-content:center}
+.svc-modal-overlay.open{display:flex}
+.svc-modal{background:var(--bg);border-radius:1.5rem 1.5rem 0 0;padding:2rem;width:100%;max-width:580px;max-height:85vh;overflow-y:auto}
+.svc-modal-icon{font-size:3rem;margin-bottom:0.75rem}
+.svc-modal-title{font-family:var(--font-serif);font-size:1.8rem;font-weight:300;margin-bottom:0.5rem}
+.svc-modal-meta{display:flex;gap:1.5rem;font-size:1rem;color:var(--mid);margin-bottom:1rem;flex-wrap:wrap}
+.svc-modal-desc{font-size:1rem;line-height:1.8;color:var(--dark);font-family:var(--font-sans);margin-bottom:1.5rem;white-space:pre-line}
+.svc-modal-select{width:100%;background:var(--rose);color:#fff;padding:1rem;border-radius:3rem;font-size:1rem;letter-spacing:0.08em;text-transform:uppercase;border:none;cursor:pointer;font-family:var(--font-sans)}
+.svc-modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--mid);padding:0.25rem}
 
 .portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:3rem}
 .portfolio-item{border-radius:1rem;overflow:hidden;aspect-ratio:1;cursor:pointer;position:relative}
@@ -159,7 +169,36 @@ nav ul{display:none}
 </style>
 </head>
 <body>
+<!-- LIGHTBOX -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;align-items:center;justify-content:center;flex-direction:column">
+  <button onclick="closeLightbox()" style="position:absolute;top:1.25rem;right:1.25rem;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.5rem;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+  <div style="position:absolute;top:1.5rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.6);font-size:0.9rem" id="lb-counter"></div>
+  <div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;max-width:900px;padding:0 4rem">
+    <button id="lb-prev" onclick="lbNav(-1)" style="position:absolute;left:0.5rem;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.5rem;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s">←</button>
+    <div id="lb-content" style="width:100%;max-height:80vh;display:flex;align-items:center;justify-content:center">
+      <!-- контент вставляется динамически -->
+    </div>
+    <button id="lb-next" onclick="lbNav(1)" style="position:absolute;right:0.5rem;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.5rem;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s">→</button>
+  </div>
+  <div id="lb-dots" style="display:flex;gap:0.5rem;margin-top:1.25rem"></div>
+</div>
+
 <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
+
+<!-- MODAL: Детали услуги -->
+<div class="svc-modal-overlay" id="svc-modal" onclick="if(event.target===this)closeSvcModal()">
+  <div class="svc-modal" style="position:relative">
+    <button class="svc-modal-close" onclick="closeSvcModal()">✕</button>
+    <div class="svc-modal-icon" id="svc-m-icon">💅</div>
+    <div class="svc-modal-title" id="svc-m-title"></div>
+    <div class="svc-modal-meta">
+      <span id="svc-m-price"></span>
+      <span id="svc-m-dur"></span>
+    </div>
+    <div class="svc-modal-desc" id="svc-m-desc"></div>
+    <button class="svc-modal-select" onclick="selectFromModal()">Выбрать эту услугу →</button>
+  </div>
+</div>
 
 <nav>
   <div class="logo">Anna <span>Nails</span></div>
@@ -216,12 +255,12 @@ nav ul{display:none}
     <div class="section-label">Мои работы</div>
     <div class="section-title">Портфолио</div>
     <div class="portfolio-grid">
-      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
-      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
-      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
-      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
-      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
-      <div class="portfolio-item"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item" onclick="openLightbox(0)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item" onclick="openLightbox(1)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item" onclick="openLightbox(2)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item" onclick="openLightbox(3)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item" onclick="openLightbox(4)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
+      <div class="portfolio-item" onclick="openLightbox(5)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
     </div>
   </div>
 </section>
@@ -366,6 +405,12 @@ async function api(method, table, body = null, q = '') {
   return t ? JSON.parse(t) : null;
 }
 
+function formatDur(m){
+  if(m>=60&&m%60===0) return `${m/60} ч`;
+  if(m>=60) return `${Math.floor(m/60)} ч ${m%60} мин`;
+  return `${m} мин`;
+}
+
 async function loadServices() {
   const grid = document.getElementById('services-grid');
   const select = document.getElementById('f-service');
@@ -380,16 +425,42 @@ async function loadServices() {
   }
 
   grid.innerHTML = data.map((s, i) => `
-    <div class="service-card" onclick="selectService('${s.id}')">
-      <div class="service-icon">${icons[i % icons.length]}</div>
+    <div class="service-card" onclick="openSvcModal('${s.id}')">
+      <div class="service-icon">${s.emoji || icons[i % icons.length]}</div>
       <h3>${s.name}</h3>
-      <p>Длительность: ${s.duration} минут</p>
+      ${s.description ? `<div class="service-desc">${s.description}</div>` : ''}
+      <p>⏱ ${formatDur(s.duration)}</p>
       <div class="service-price">${s.price.toLocaleString()} ₽</div>
     </div>
   `).join('');
 
   select.innerHTML = '<option value="">Выберите услугу</option>' +
-    data.map(s => `<option value="${s.id}">${s.name} — ${s.price.toLocaleString()} ₽ (${s.duration} мин)</option>`).join('');
+    data.map(s => `<option value="${s.id}">${s.emoji||'💅'} ${s.name} — ${s.price.toLocaleString()} ₽ (${formatDur(s.duration)})</option>`).join('');
+}
+
+let currentSvcId = null;
+
+function openSvcModal(id) {
+  const s = servicesData.find(x => x.id === id);
+  if (!s) return;
+  currentSvcId = id;
+  document.getElementById('svc-m-icon').textContent = s.emoji || '💅';
+  document.getElementById('svc-m-title').textContent = s.name;
+  document.getElementById('svc-m-price').textContent = s.price.toLocaleString() + ' ₽';
+  document.getElementById('svc-m-dur').textContent = '⏱ ' + formatDur(s.duration);
+  document.getElementById('svc-m-desc').textContent = s.description || '';
+  document.getElementById('svc-m-desc').style.display = s.description ? 'block' : 'none';
+  document.getElementById('svc-modal').classList.add('open');
+}
+
+function closeSvcModal() {
+  document.getElementById('svc-modal').classList.remove('open');
+}
+
+function selectFromModal() {
+  closeSvcModal();
+  selectService(currentSvcId);
+  document.getElementById('booking').scrollIntoView({behavior:'smooth'});
 }
 
 function selectService(id) {
@@ -734,6 +805,49 @@ async function bcalNext() {
 }
 
 loadServices();
+
+// LIGHTBOX
+let lbIndex=0,lbItems=[];
+function openLightbox(index){
+  lbItems=[...document.querySelectorAll('.portfolio-item')];
+  lbIndex=index;
+  document.getElementById('lightbox').style.display='flex';
+  document.body.style.overflow='hidden';
+  renderLightbox();
+}
+function closeLightbox(){
+  document.getElementById('lightbox').style.display='none';
+  document.body.style.overflow='';
+}
+function renderLightbox(){
+  const total=lbItems.length,item=lbItems[lbIndex];
+  const img=item.querySelector('img'),ph=item.querySelector('.ph');
+  const content=document.getElementById('lb-content');
+  if(img){
+    content.innerHTML=`<img src="${img.src}" style="max-width:100%;max-height:78vh;object-fit:contain;border-radius:0.75rem">`;
+  } else {
+    content.innerHTML=`<div style="width:min(70vw,500px);height:min(60vh,400px);background:linear-gradient(135deg,#F5E8E6,#EDD5D2);border-radius:0.75rem;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:1.2rem;color:#C8726A;font-style:italic">${ph?.querySelector('.ph-label')?.textContent||'фото работы'}</div>`;
+  }
+  document.getElementById('lb-counter').textContent=`${lbIndex+1} / ${total}`;
+  const prev=document.getElementById('lb-prev'),next=document.getElementById('lb-next');
+  prev.style.opacity=lbIndex===0?'0.3':'1';
+  prev.style.pointerEvents=lbIndex===0?'none':'auto';
+  next.style.opacity=lbIndex===total-1?'0.3':'1';
+  next.style.pointerEvents=lbIndex===total-1?'none':'auto';
+  document.getElementById('lb-dots').innerHTML=lbItems.map((_,i)=>
+    `<div onclick="lbGo(${i})" style="width:${i===lbIndex?'20px':'8px'};height:8px;border-radius:4px;background:${i===lbIndex?'#C8726A':'rgba(255,255,255,0.4)'};cursor:pointer;transition:all 0.2s"></div>`
+  ).join('');
+}
+function lbNav(dir){const n=lbIndex+dir;if(n<0||n>=lbItems.length)return;lbIndex=n;renderLightbox();}
+function lbGo(i){lbIndex=i;renderLightbox();}
+document.getElementById('lightbox').addEventListener('click',e=>{if(e.target===document.getElementById('lightbox'))closeLightbox();});
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('lightbox').style.display==='flex'){
+    if(e.key==='ArrowLeft')lbNav(-1);
+    if(e.key==='ArrowRight')lbNav(1);
+    if(e.key==='Escape')closeLightbox();
+  }
+});
 </script>
 </body>
 </html>
