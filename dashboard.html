@@ -20,7 +20,7 @@ body.dark{
   --bg:#231E1C;--bg2:#1A1614;--border:rgba(200,114,106,0.2);
   --rose-light:#3D2825;--green-light:#1A2E24;--orange-light:#2E1E0F;
 }
-body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-height:100vh;font-size:16px;transition:background 0.2s,color 0.2s;-webkit-overflow-scrolling:touch}
+body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-height:100vh;font-size:16px;transition:background 0.2s,color 0.2s;-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 .theme-btn{position:fixed;top:1rem;right:1rem;z-index:200;background:var(--bg);border:0.5px solid var(--border);border-radius:2rem;padding:0.4rem 0.9rem;cursor:pointer;font-size:1rem;font-family:var(--font-sans);color:var(--dark);transition:all 0.2s}
 .theme-btn:hover{border-color:var(--rose);color:var(--rose)}
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
@@ -50,21 +50,82 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .main.expanded{margin-left:0}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:99}
 .sidebar-overlay.show{display:block}
-.menu-btn{position:fixed;top:1rem;left:1rem;z-index:101;background:var(--bg);border:0.5px solid var(--border);border-radius:0.75rem;width:40px;height:40px;display:none;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.menu-btn{position:fixed;top:1rem;left:1rem;z-index:101;background:var(--bg);border:0.5px solid var(--border);border-radius:0.75rem;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;box-shadow:0 2px 8px rgba(0,0,0,0.1);transition:left 0.3s}
+.sidebar:not(.collapsed) ~ * .menu-btn-wrap{left:256px}
+
+@media(min-width:769px){
+  .menu-btn{left:256px;top:1rem}
+  .sidebar.collapsed+.main{margin-left:0}
+}
 
 @media(max-width:768px){
   .sidebar{transform:translateX(-240px)}
-  .main{margin-left:0;padding:1.25rem;padding-top:4rem}
-  .menu-btn{display:flex}
+  .main{margin-left:0;padding:1rem;padding-top:4.5rem;overflow-x:hidden}
   .sidebar.open{transform:translateX(0)}
-  .stats-row{grid-template-columns:repeat(2,1fr)}
-  .week-grid{grid-template-columns:repeat(4,1fr)}
-  .booking-item{grid-template-columns:70px 1fr;gap:0.5rem}
-  .booking-actions{grid-column:1/-1}
-  .form-row{grid-template-columns:1fr}
-  .stats-section{grid-template-columns:1fr}
+
+  /* Скрываем кнопку меню на экране логина */
+  #login-screen ~ * #menu-btn,
+  body:has(#login-screen:not([style*="none"])) .menu-btn{display:none!important}
+
+  /* Статистика — 2 колонки */
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:0.75rem;margin-bottom:1.25rem}
+  .stat-card{padding:1rem}
+  .stat-card .num{font-size:1.8rem}
+  .stat-card .lbl{font-size:0.8rem}
+
+  /* Заголовок страницы */
+  .page-title{font-size:1.6rem}
+  .page-sub{margin-bottom:1.25rem}
+
+  /* Кнопки навигации по дням */
+  .bookings-header{flex-direction:column;align-items:stretch;gap:0.75rem}
+  .date-nav{justify-content:center}
+  .date-nav .current-date{font-size:1rem;min-width:160px}
+  .bookings-header>.btn{width:100%;text-align:center}
+
+  /* Карточка записи */
+  .booking-item{grid-template-columns:60px 1fr;gap:0.5rem;padding:1rem}
+  .booking-item>div:nth-child(3){grid-column:2}
+  .booking-actions{grid-column:1/-1;justify-content:flex-start;gap:0.5rem;margin-top:0.25rem}
+  .booking-time{font-size:1.1rem}
+
+  /* Расписание */
+  .schedule-controls{flex-direction:column;gap:0.75rem}
+  .view-tabs{width:100%;justify-content:stretch}
+  .view-tab{flex:1;text-align:center}
+  .schedule-nav{justify-content:center;width:100%}
+  .schedule-nav .nav-label{min-width:140px;font-size:1rem}
+  .week-grid{grid-template-columns:repeat(3,1fr);gap:0.4rem}
+  .month-grid{gap:0.2rem}
+  .month-day{min-height:52px;padding:0.4rem}
+
+  /* Услуги */
   .services-grid{grid-template-columns:1fr}
+  .service-item-actions{flex-wrap:wrap}
+
+  /* Клиенты */
+  .visit-row{flex-wrap:wrap;gap:0.25rem}
+  .visit-date{min-width:auto;width:100%}
+
+  /* Статистика */
+  .stats-section{grid-template-columns:repeat(2,1fr)}
+  .stats-big-card .num{font-size:1.8rem}
+
+  /* Рабочие часы */
   .work-hours-grid{grid-template-columns:1fr}
+  .time-row{flex-wrap:wrap;gap:0.5rem}
+
+  /* Форма */
+  .form-row{grid-template-columns:1fr}
+  .modal{padding:1.5rem;margin:1rem}
+
+  /* Чёрный список */
+  .blacklist-item{flex-wrap:wrap;gap:0.5rem}
+
+  /* Кнопка темы */
+  .theme-btn{top:auto;bottom:1rem;right:1rem;font-size:0.8rem;padding:0.4rem 0.75rem}
+
+  .bookings-list{gap:0.5rem}
 }
 .page{display:none}
 .page.active{display:block}
@@ -233,7 +294,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 
 <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙 Тёмная</button>
 <div class="toast" id="toast"></div>
-<button class="menu-btn" id="menu-btn" onclick="toggleSidebar()">☰</button>
+<button class="menu-btn" id="menu-btn" onclick="toggleSidebar()" style="display:none">☰</button>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div id="login-screen">
@@ -249,9 +310,8 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 
 <div id="app">
   <div class="sidebar" id="sidebar">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 0.5rem;margin-bottom:0.25rem">
+    <div style="display:flex;align-items:center;padding:0 0.5rem;margin-bottom:0.25rem">
       <div class="sidebar-logo">Nail <span>Panel</span></div>
-      <button onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--mid);padding:0.25rem">☰</button>
     </div>
     <div class="sidebar-master" id="master-name">Загрузка...</div>
     <button class="nav-item active" onclick="showPage('bookings',this)"><span class="nav-icon">📅</span> Записи</button>
@@ -569,6 +629,8 @@ function startApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('master-name').textContent=master.name;
+  document.getElementById('menu-btn').style.display='flex';
+  if(window.innerWidth>768) document.getElementById('menu-btn').style.left='256px';
   initApp();
 }
 
@@ -577,6 +639,7 @@ function logout(){
   localStorage.removeItem('nail_session');
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
+  document.getElementById('menu-btn').style.display='none';
 }
 
 function checkSession(){
@@ -1082,13 +1145,15 @@ function toggleSidebar(){
   const sidebar=document.getElementById('sidebar');
   const main=document.querySelector('.main');
   const overlay=document.getElementById('sidebar-overlay');
+  const btn=document.getElementById('menu-btn');
   const isMobile=window.innerWidth<=768;
   if(isMobile){
     sidebar.classList.toggle('open');
     overlay.classList.toggle('show');
   } else {
-    sidebar.classList.toggle('collapsed');
-    main.classList.toggle('expanded');
+    const collapsed=sidebar.classList.toggle('collapsed');
+    main.classList.toggle('expanded',collapsed);
+    btn.style.left=collapsed?'1rem':'256px';
   }
 }
 
@@ -1104,6 +1169,9 @@ function toggleTheme(){
 }
 const savedTheme=localStorage.getItem('nail_theme');
 if(savedTheme==='dark'){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='☀️ Светлая';}
+
+// Позиция кнопки меню
+if(window.innerWidth>768) document.getElementById('menu-btn').style.left='256px';
 </script>
 </body>
 </html>
