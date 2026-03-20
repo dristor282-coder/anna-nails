@@ -75,6 +75,9 @@ section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
 .services-loading{text-align:center;padding:3rem;color:var(--mid);font-size:1rem}
 .svc-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:flex-end;justify-content:center}
 .svc-modal-overlay.open{display:flex}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg);border-radius:1.5rem;padding:2.25rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
 .svc-modal{background:var(--bg);border-radius:1.5rem 1.5rem 0 0;padding:2rem;width:100%;max-width:580px;max-height:85vh;overflow-y:auto}
 .svc-modal-icon{font-size:3rem;margin-bottom:0.75rem}
 .svc-modal-title{font-family:var(--font-serif);font-size:1.8rem;font-weight:300;margin-bottom:0.5rem}
@@ -209,7 +212,48 @@ nav ul{display:none}
     <li><a href="#booking">Запись</a></li>
   </ul>
   <button class="nav-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Записаться</button>
+  <button id="client-auth-btn" onclick="openClientLogin()" style="background:none;border:0.5px solid var(--border);color:var(--dark);padding:0.5rem 1rem;border-radius:2rem;font-size:0.85rem;cursor:pointer;font-family:var(--font-sans);transition:all 0.2s;margin-left:0.5rem">👤 Войти</button>
 </nav>
+
+<!-- MODAL: SMS подтверждение при записи -->
+<div class="modal-overlay" id="sms-modal" style="z-index:300">
+  <div class="modal">
+    <h3>Подтвердите номер</h3>
+    <input type="hidden" id="sms-modal-phone-hidden">
+    <input type="hidden" id="sms-modal-name">
+    <p style="color:var(--mid);margin-bottom:1.5rem">Код отправлен на <strong id="sms-modal-phone"></strong></p>
+    <div class="form-group">
+      <label>Код из SMS</label>
+      <input type="text" inputmode="numeric" id="sms-code-input" placeholder="0000" maxlength="4" style="font-size:1.5rem;text-align:center;letter-spacing:0.5em">
+    </div>
+    <button class="form-submit" id="sms-confirm-btn" onclick="confirmSmsCode()">Подтвердить</button>
+    <p style="text-align:center;margin-top:1rem;font-size:0.9rem;color:var(--mid)">Не пришло? <button onclick="resendCode()" style="background:none;border:none;color:var(--rose);cursor:pointer;font-size:0.9rem;font-family:var(--font-sans)">Отправить повторно</button></p>
+  </div>
+</div>
+
+<!-- MODAL: Вход в аккаунт -->
+<div class="modal-overlay" id="client-login-modal" style="z-index:300">
+  <div class="modal">
+    <h3>Войти в аккаунт</h3>
+    <div id="login-step1">
+      <div class="form-group">
+        <label>Номер телефона</label>
+        <input type="tel" id="login-phone-input" placeholder="+7 (___) ___-__-__">
+      </div>
+      <button class="form-submit" onclick="sendLoginCode()">Получить код</button>
+      <button onclick="document.getElementById('client-login-modal').classList.remove('open')" style="width:100%;margin-top:0.75rem;padding:0.85rem;border-radius:3rem;font-size:0.9rem;background:none;border:0.5px solid var(--border);cursor:pointer;font-family:var(--font-sans);color:var(--dark)">Отмена</button>
+    </div>
+    <div id="login-step2" style="display:none">
+      <input type="hidden" id="login-phone-hidden">
+      <p style="color:var(--mid);margin-bottom:1.5rem">Код отправлен на ваш номер</p>
+      <div class="form-group">
+        <label>Код из SMS</label>
+        <input type="text" inputmode="numeric" id="login-code-input" placeholder="0000" maxlength="4" style="font-size:1.5rem;text-align:center;letter-spacing:0.5em">
+      </div>
+      <button class="form-submit" onclick="confirmLoginCode()">Войти</button>
+    </div>
+  </div>
+</div>
 
 <div class="hero">
   <div class="hero-text">
@@ -580,6 +624,53 @@ function minToTime(min) {
   return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 }
 
+const SMSC_LOGIN = 'skr';
+const SMSC_PASS = '-Lz.SvG6fEMHuNC';
+let clientSession = null;
+let pendingBooking = null;
+
+// Загружаем сессию клиента
+function loadClientSession(){
+  try{
+    const s = JSON.parse(localStorage.getItem('client_session'));
+    if(s && s.expires > Date.now()) clientSession = s;
+    else localStorage.removeItem('client_session');
+  } catch(e){}
+  updateClientUI();
+}
+
+function updateClientUI(){
+  const btn = document.getElementById('client-auth-btn');
+  if(!btn) return;
+  if(clientSession){
+    btn.textContent = `👤 ${clientSession.name}`;
+    document.getElementById('f-name').value = clientSession.name;
+    document.getElementById('f-phone').value = clientSession.phone;
+    document.getElementById('f-name').readOnly = true;
+    document.getElementById('f-phone').readOnly = true;
+  } else {
+    btn.textContent = '👤 Войти';
+  }
+}
+
+async function sendSmsCode(phone){
+  const code = String(Math.floor(1000 + Math.random() * 9000));
+  const cleanPhone = phone.replace(/\D/g,'');
+  const msg = encodeURIComponent(`Ваш код подтверждения: ${code}`);
+  await fetch(`https://smsc.ru/sys/send.php?login=${SMSC_LOGIN}&psw=${encodeURIComponent(SMSC_PASS)}&phones=${cleanPhone}&mes=${msg}&fmt=3`, {mode:'no-cors'});
+  // Сохраняем код в Supabase
+  const expires = new Date(Date.now() + 5*60*1000).toISOString();
+  await api('POST','sms_codes',{phone:cleanPhone,code,expires_at:expires});
+  return code;
+}
+
+async function verifySmsCode(phone, inputCode){
+  const cleanPhone = phone.replace(/\D/g,'');
+  const now = new Date().toISOString();
+  const data = await api('GET','sms_codes',null,`?phone=eq.${cleanPhone}&code=eq.${inputCode}&expires_at=gte.${now}&order=created_at.desc&limit=1`);
+  return data && data.length > 0;
+}
+
 async function submitBooking() {
   const name = document.getElementById('f-name').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
@@ -597,33 +688,146 @@ async function submitBooking() {
   const endMin = timeToMin(time) + (service?.duration || 60);
   const endTime = minToTime(endMin);
 
+  pendingBooking = {master_id:MASTER_ID,service_id:serviceId,client_name:name,client_phone:phone.replace(/\D/g,''),booking_date:date,start_time:time,end_time:endTime,comment,status:'pending'};
+
+  // Если уже авторизован — сразу записываем
+  if(clientSession && clientSession.phone === phone.replace(/\D/g,'')){
+    await doBooking();
+    return;
+  }
+
+  // Проверяем есть ли клиент
+  const cleanPhone = phone.replace(/\D/g,'');
+  const existing = await api('GET','clients',null,`?phone=eq.${cleanPhone}`);
+
   const btn = document.getElementById('f-submit');
   btn.disabled = true;
-  btn.textContent = 'Отправляем...';
+  btn.textContent = 'Отправляем код...';
 
-  const result = await api('POST', 'bookings', {
-    master_id: MASTER_ID,
-    service_id: serviceId,
-    client_name: name,
-    client_phone: phone,
-    booking_date: date,
-    start_time: time,
-    end_time: endTime,
-    comment: comment,
-    status: 'pending'
-  });
+  await sendSmsCode(phone);
 
-  if (result) {
+  btn.disabled = false;
+  btn.textContent = 'Записаться';
+
+  // Показываем форму ввода кода
+  showSmsModal(name, phone, existing && existing.length > 0);
+}
+
+function showSmsModal(name, phone, isExisting){
+  document.getElementById('sms-modal-phone').textContent = phone;
+  document.getElementById('sms-modal-name').value = name;
+  document.getElementById('sms-modal-phone-hidden').value = phone;
+  document.getElementById('sms-modal').classList.add('open');
+  document.getElementById('sms-code-input').value = '';
+  setTimeout(()=>document.getElementById('sms-code-input').focus(), 300);
+}
+
+async function confirmSmsCode(){
+  const code = document.getElementById('sms-code-input').value.trim();
+  const phone = document.getElementById('sms-modal-phone-hidden').value;
+  const name = document.getElementById('sms-modal-name').value;
+  const cleanPhone = phone.replace(/\D/g,'');
+
+  if(!code || code.length < 4){ alert('Введите код из SMS'); return; }
+
+  const btn = document.getElementById('sms-confirm-btn');
+  btn.disabled = true; btn.textContent = 'Проверяем...';
+
+  const valid = await verifySmsCode(phone, code);
+  if(!valid){
+    btn.disabled = false; btn.textContent = 'Подтвердить';
+    alert('Неверный код или срок действия истёк');
+    return;
+  }
+
+  // Создаём или обновляем клиента
+  const existing = await api('GET','clients',null,`?phone=eq.${cleanPhone}`);
+  let client;
+  if(existing && existing.length > 0){
+    client = existing[0];
+  } else {
+    const res = await api('POST','clients',{phone:cleanPhone, name});
+    client = res && res[0];
+  }
+
+  // Сохраняем сессию на 30 дней
+  clientSession = {id:client?.id, phone:cleanPhone, name:client?.name||name, expires:Date.now()+30*24*60*60*1000};
+  localStorage.setItem('client_session', JSON.stringify(clientSession));
+  updateClientUI();
+
+  document.getElementById('sms-modal').classList.remove('open');
+  await doBooking();
+}
+
+async function doBooking(){
+  const btn = document.getElementById('f-submit');
+  btn.disabled = true; btn.textContent = 'Отправляем...';
+
+  const result = await api('POST','bookings',pendingBooking);
+  if(result){
     document.getElementById('booking-form').style.display = 'none';
     document.getElementById('success-msg').style.display = 'block';
     const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-    const [y,m,d] = date.split('-').map(Number);
-    document.getElementById('success-details').textContent = `${d} ${months[m-1]} в ${time}`;
+    const [y,m,d] = pendingBooking.booking_date.split('-').map(Number);
+    document.getElementById('success-details').textContent = `${d} ${months[m-1]} в ${pendingBooking.start_time}`;
   } else {
-    btn.disabled = false;
-    btn.textContent = 'Записаться';
+    btn.disabled = false; btn.textContent = 'Записаться';
     alert('Что-то пошло не так, попробуйте ещё раз');
   }
+}
+
+async function resendCode(){
+  const phone = document.getElementById('sms-modal-phone-hidden').value;
+  await sendSmsCode(phone);
+  alert('Код отправлен повторно');
+}
+
+function openClientLogin(){
+  if(clientSession){
+    if(confirm(`Выйти из аккаунта ${clientSession.name}?`)){
+      clientSession = null;
+      localStorage.removeItem('client_session');
+      document.getElementById('f-name').readOnly = false;
+      document.getElementById('f-phone').readOnly = false;
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-phone').value = '';
+      updateClientUI();
+    }
+    return;
+  }
+  // Показываем форму входа
+  document.getElementById('login-phone-input').value = '';
+  document.getElementById('client-login-modal').classList.add('open');
+}
+
+async function sendLoginCode(){
+  const phone = document.getElementById('login-phone-input').value.trim();
+  if(!phone){ alert('Введите номер телефона'); return; }
+  const cleanPhone = phone.replace(/\D/g,'');
+  const existing = await api('GET','clients',null,`?phone=eq.${cleanPhone}`);
+  if(!existing || existing.length === 0){ alert('Аккаунт не найден. Запишитесь сначала.'); return; }
+  await sendSmsCode(phone);
+  document.getElementById('login-step1').style.display = 'none';
+  document.getElementById('login-step2').style.display = 'block';
+  document.getElementById('login-phone-hidden').value = phone;
+}
+
+async function confirmLoginCode(){
+  const phone = document.getElementById('login-phone-hidden').value;
+  const code = document.getElementById('login-code-input').value.trim();
+  const cleanPhone = phone.replace(/\D/g,'');
+  const valid = await verifySmsCode(phone, code);
+  if(!valid){ alert('Неверный код'); return; }
+  const existing = await api('GET','clients',null,`?phone=eq.${cleanPhone}`);
+  const client = existing[0];
+  clientSession = {id:client.id, phone:cleanPhone, name:client.name, expires:Date.now()+30*24*60*60*1000};
+  localStorage.setItem('client_session', JSON.stringify(clientSession));
+  document.getElementById('client-login-modal').classList.remove('open');
+  updateClientUI();
+  document.getElementById('f-name').value = client.name;
+  document.getElementById('f-phone').value = phone;
+  document.getElementById('f-name').readOnly = true;
+  document.getElementById('f-phone').readOnly = true;
 }
 
 document.getElementById('f-phone').addEventListener('keydown', function(e) {
@@ -805,6 +1009,7 @@ async function bcalNext() {
 }
 
 loadServices();
+loadClientSession();
 
 // LIGHTBOX
 let lbIndex=0,lbItems=[];
