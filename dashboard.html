@@ -230,7 +230,9 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 .day-label.active{background:var(--green-light);color:var(--green)}
 .day-label.inactive{background:var(--rose-light);color:var(--rose)}
 
-/* EXCEPTIONS */
+.rev-tab{padding:0.4rem 0.85rem;border-radius:2rem;font-size:0.85rem;border:0.5px solid var(--border);background:none;cursor:pointer;font-family:var(--font-sans);color:var(--mid);transition:all 0.15s}
+.rev-tab:hover{border-color:var(--rose);color:var(--rose)}
+.rev-tab-active{background:var(--rose);color:#fff!important;border-color:var(--rose)!important}
 .exception-item{background:var(--bg);border-radius:1rem;padding:1.25rem 1.5rem;border:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
 .exception-item.is-off{border-color:rgba(226,75,74,0.3);background:var(--rose-light)}
 .exception-item.is-on{border-color:rgba(74,155,111,0.3);background:var(--green-light)}
@@ -336,7 +338,6 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
         <div class="stat-card"><div class="num" id="stat-today">0</div><div class="lbl">Сегодня</div></div>
         <div class="stat-card"><div class="num" id="stat-week">0</div><div class="lbl">На неделе</div></div>
         <div class="stat-card"><div class="num" id="stat-pending">0</div><div class="lbl">Ожидают</div></div>
-        <div class="stat-card"><div class="num" id="stat-revenue">0</div><div class="lbl">Выручка</div></div>
       </div>
       <div class="bookings-header">
         <div class="date-nav">
@@ -437,8 +438,22 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     <div class="page" id="page-stats">
       <div class="page-title"><em>Статистика</em></div>
       <div class="page-sub">Выручка и популярные услуги</div>
-      <div class="stats-section">
-        <div class="stats-big-card"><div class="num" id="s-month">0 ₽</div><div class="lbl">Выручка за месяц</div></div>
+
+      <!-- Выручка с переключателем -->
+      <div style="background:var(--bg);border-radius:1rem;padding:1.4rem;border:0.5px solid var(--border);margin-bottom:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem">
+          <div style="font-size:1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid)">Выручка</div>
+          <div style="display:flex;gap:0.4rem">
+            <button onclick="setRevPeriod('day',this)" class="rev-tab rev-tab-active">День</button>
+            <button onclick="setRevPeriod('week',this)" class="rev-tab">Неделя</button>
+            <button onclick="setRevPeriod('month',this)" class="rev-tab">Месяц</button>
+          </div>
+        </div>
+        <div id="rev-amount" style="font-family:var(--font-serif);font-size:2.4rem;font-weight:300;color:var(--rose)">0 ₽</div>
+        <div id="rev-label" style="font-size:0.9rem;color:var(--mid);margin-top:0.25rem">сегодня</div>
+      </div>
+
+      <div class="stats-section" style="margin-bottom:1rem">
         <div class="stats-big-card"><div class="num" id="s-total">0</div><div class="lbl">Всего записей</div></div>
         <div class="stats-big-card"><div class="num" id="s-clients">0</div><div class="lbl">Уникальных клиентов</div></div>
       </div>
@@ -502,10 +517,32 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
   <div class="modal">
     <h3 id="service-modal-title">Новая услуга</h3>
     <input type="hidden" id="s-id">
+    <div class="form-group">
+      <label>Иконка</label>
+      <div id="emoji-picker" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.5rem">
+        <span style="font-size:0.85rem;color:var(--mid);width:100%">Выберите стикер:</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        <span id="s-emoji-preview" style="font-size:2rem">💅</span>
+        <input type="hidden" id="s-emoji" value="💅">
+        <span style="font-size:0.85rem;color:var(--mid)">или введите своё:</span>
+        <input type="text" id="s-emoji-custom" maxlength="2" placeholder="✨" style="width:60px;text-align:center;font-size:1.4rem;padding:0.4rem" oninput="setCustomEmoji(this.value)">
+      </div>
+    </div>
     <div class="form-group"><label>Название</label><input type="text" id="s-name" placeholder="Маникюр с покрытием"></div>
+    <div class="form-group"><label>Описание <span style="color:var(--mid);font-weight:400">(необязательно)</span></label><textarea id="s-desc" placeholder="Укажите что входит в услугу..." style="resize:vertical;min-height:80px"></textarea></div>
     <div class="form-row">
       <div class="form-group"><label>Цена (₽)</label><input type="number" id="s-price" placeholder="1500"></div>
-      <div class="form-group"><label>Длительность (мин)</label><input type="number" id="s-duration" placeholder="60"></div>
+      <div class="form-group">
+        <label>Длительность</label>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <input type="number" id="s-duration-val" placeholder="60" style="flex:1;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none">
+          <select id="s-duration-unit" style="padding:0.8rem 0.75rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none">
+            <option value="min">мин</option>
+            <option value="hour">час</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-outline" onclick="closeModal('modal-service')">Отмена</button>
@@ -657,7 +694,15 @@ async function initApp(){
   if(tzSelect)tzSelect.value=userTZ;
   document.getElementById('today-date').textContent=fdr(new Date());
   document.getElementById('nav-date').textContent=fdr(bookDate);
-  await loadServices();await loadBookings();await loadDashStats();
+  await loadServices();
+  // Автоматически подтверждаем все прошедшие pending записи
+  const today=fd(new Date());
+  const now=new Date();
+  const nowTime=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  await api('PATCH',`bookings?master_id=eq.${master.id}&status=eq.pending&booking_date=lt.${today}`,{status:'confirmed'});
+  await api('PATCH',`bookings?master_id=eq.${master.id}&status=eq.pending&booking_date=eq.${today}&end_time=lt.${nowTime}`,{status:'confirmed'});
+  await loadBookings();
+  await loadDashStats();
 }
 
 function saveTZ(){
@@ -671,15 +716,13 @@ function saveTZ(){
 async function loadDashStats(){
   const today=todayStr(),we=new Date();we.setDate(we.getDate()+7);
   const[tb,wb,pb]=await Promise.all([
-    api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=eq.${today}&status=neq.cancelled&select=*,services(price)`),
+    api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=eq.${today}&status=neq.cancelled`),
     api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=gte.${today}&booking_date=lte.${fd(we)}&status=neq.cancelled`),
     api('GET','bookings',null,`?master_id=eq.${master.id}&status=eq.pending`)
   ]);
   document.getElementById('stat-today').textContent=tb?tb.length:0;
   document.getElementById('stat-week').textContent=wb?wb.length:0;
   document.getElementById('stat-pending').textContent=pb?pb.length:0;
-  const rev=tb?tb.reduce((s,b)=>s+(b.services?.price||0),0):0;
-  document.getElementById('stat-revenue').textContent=rev.toLocaleString()+' ₽';
 }
 
 async function loadBookings(){
@@ -796,31 +839,88 @@ function goDay(ds){
   loadBookings();
 }
 
+const SERVICE_EMOJIS=['💅','✨','💎','🌸','🎨','🌟','🪷','✦','🦋','🌺','💐','🍀','🫧','🩷','💆','🧖'];
+
+function initEmojiPicker(){
+  const picker=document.getElementById('emoji-picker');
+  const existing=picker.querySelector('span');
+  picker.innerHTML='';
+  picker.appendChild(existing);
+  SERVICE_EMOJIS.forEach(e=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.textContent=e;
+    btn.style.cssText='font-size:1.4rem;background:none;border:0.5px solid var(--border);border-radius:0.5rem;padding:0.3rem 0.5rem;cursor:pointer;transition:all 0.15s';
+    btn.onclick=()=>selectEmoji(e);
+    picker.appendChild(btn);
+  });
+}
+
+function selectEmoji(e){
+  document.getElementById('s-emoji').value=e;
+  document.getElementById('s-emoji-preview').textContent=e;
+  document.getElementById('s-emoji-custom').value='';
+}
+
+function setCustomEmoji(v){
+  if(v){
+    document.getElementById('s-emoji').value=v;
+    document.getElementById('s-emoji-preview').textContent=v;
+  }
+}
+
+function formatDuration(minutes){
+  if(minutes>=60&&minutes%60===0) return `${minutes/60} ч`;
+  if(minutes>=60) return `${Math.floor(minutes/60)} ч ${minutes%60} мин`;
+  return `${minutes} мин`;
+}
+
 async function loadServices(){
   const list=document.getElementById('services-list');
   list.innerHTML='<div class="loading">Загрузка...</div>';
   const data=await api('GET','services',null,`?master_id=eq.${master.id}&order=name.asc`);
   services=data||[];
-  document.getElementById('b-service').innerHTML=services.map(s=>`<option value="${s.id}">${s.name} — ${s.price} ₽ (${s.duration} мин)</option>`).join('');
+  document.getElementById('b-service').innerHTML=services.map(s=>`<option value="${s.id}">${s.emoji||'💅'} ${s.name} — ${s.price} ₽ (${formatDuration(s.duration)})</option>`).join('');
   if(!data||data.length===0){list.innerHTML='<div class="empty-state"><div class="emoji">💅</div><p>Добавьте первую услугу</p></div>';return;}
-  list.innerHTML=data.map(s=>`<div class="service-item"><h4>${s.name}</h4><div class="service-meta"><span class="service-price-tag">${s.price.toLocaleString()} ₽</span><span>⏱ ${s.duration} мин</span></div><div class="service-item-actions"><button class="action-btn" onclick="openEditService('${s.id}','${s.name.replace(/'/g,"\\'")}',${s.price},${s.duration})">Изменить</button><button class="action-btn danger" onclick="delSvc('${s.id}')">Удалить</button></div></div>`).join('');
+  list.innerHTML=data.map(s=>`<div class="service-item">
+    <h4>${s.emoji||'💅'} ${s.name}</h4>
+    ${s.description?`<p style="font-size:0.9rem;color:var(--mid);margin:0.4rem 0;font-family:var(--font-sans);line-height:1.5">${s.description}</p>`:''}
+    <div class="service-meta"><span class="service-price-tag">${s.price.toLocaleString()} ₽</span><span>⏱ ${formatDuration(s.duration)}</span></div>
+    <div class="service-item-actions">
+      <button class="action-btn" onclick="openEditService('${s.id}','${(s.name||'').replace(/'/g,"\\'")}',${s.price},${s.duration},'${s.emoji||'💅'}','${(s.description||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')">Изменить</button>
+      <button class="action-btn danger" onclick="delSvc('${s.id}')">Удалить</button>
+    </div>
+  </div>`).join('');
 }
 
 function openAddService(){
   document.getElementById('service-modal-title').textContent='Новая услуга';
   document.getElementById('s-id').value='';
   document.getElementById('s-name').value='';
+  document.getElementById('s-desc').value='';
   document.getElementById('s-price').value='';
-  document.getElementById('s-duration').value='';
+  document.getElementById('s-duration-val').value='';
+  document.getElementById('s-duration-unit').value='min';
+  selectEmoji('💅');
+  initEmojiPicker();
   document.getElementById('modal-service').classList.add('open');
 }
 
-function openEditService(id,name,price,duration){
+function openEditService(id,name,price,duration,emoji,desc){
   document.getElementById('service-modal-title').textContent='Редактировать услугу';
   document.getElementById('s-id').value=id;
   document.getElementById('s-name').value=name;
+  document.getElementById('s-desc').value=desc||'';
   document.getElementById('s-price').value=price;
-  document.getElementById('s-duration').value=duration;
+  if(duration>=60&&duration%60===0){
+    document.getElementById('s-duration-val').value=duration/60;
+    document.getElementById('s-duration-unit').value='hour';
+  } else {
+    document.getElementById('s-duration-val').value=duration;
+    document.getElementById('s-duration-unit').value='min';
+  }
+  selectEmoji(emoji||'💅');
+  initEmojiPicker();
   document.getElementById('modal-service').classList.add('open');
 }
 
@@ -828,10 +928,14 @@ async function saveService(){
   const id=document.getElementById('s-id').value;
   const name=document.getElementById('s-name').value;
   const price=parseInt(document.getElementById('s-price').value);
-  const duration=parseInt(document.getElementById('s-duration').value);
-  if(!name||!price||!duration){showToast('Заполните все поля','error');return;}
-  if(id){await api('PATCH',`services?id=eq.${id}`,{name,price,duration});}
-  else{await api('POST','services',{master_id:master.id,name,price,duration});}
+  const dVal=parseInt(document.getElementById('s-duration-val').value);
+  const dUnit=document.getElementById('s-duration-unit').value;
+  const duration=dUnit==='hour'?dVal*60:dVal;
+  const emoji=document.getElementById('s-emoji').value||'💅';
+  const description=document.getElementById('s-desc').value||'';
+  if(!name||!price||!dVal){showToast('Заполните все поля','error');return;}
+  if(id){await api('PATCH',`services?id=eq.${id}`,{name,price,duration,emoji,description});}
+  else{await api('POST','services',{master_id:master.id,name,price,duration,emoji,description});}
   closeModal('modal-service');loadServices();
   showToast(id?'Услуга обновлена!':'Услуга добавлена!');
 }
@@ -1061,15 +1165,36 @@ function filterClients(){
   renderClients(allClients.filter(c=>c.name.toLowerCase().includes(q)||c.phone.includes(q)));
 }
 
+let revPeriod='day';
+
+function setRevPeriod(period,btn){
+  revPeriod=period;
+  document.querySelectorAll('.rev-tab').forEach(b=>b.classList.remove('rev-tab-active'));
+  btn.classList.add('rev-tab-active');
+  loadStats();
+}
+
 async function loadStats(){
   const now=new Date();
-  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
-  const[monthB,allB]=await Promise.all([
-    api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=gte.${fd(monthStart)}&status=eq.confirmed&select=*,services(name,price)`),
+  const today=fd(now);
+  let revFrom,revTo,revLabel;
+  if(revPeriod==='day'){
+    revFrom=revTo=today;revLabel='сегодня';
+  } else if(revPeriod==='week'){
+    const mon=new Date(now);mon.setDate(now.getDate()-(now.getDay()||7)+1);
+    const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+    revFrom=fd(mon);revTo=fd(sun);revLabel='на этой неделе';
+  } else {
+    revFrom=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+    revTo=today;revLabel='в этом месяце';
+  }
+  const[revB,allB]=await Promise.all([
+    api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=gte.${revFrom}&booking_date=lte.${revTo}&status=eq.confirmed&select=services(price)`),
     api('GET','bookings',null,`?master_id=eq.${master.id}&status=eq.confirmed&select=client_phone,services(name,price)`)
   ]);
-  const monthRev=(monthB||[]).reduce((s,b)=>s+(b.services?.price||0),0);
-  document.getElementById('s-month').textContent=monthRev.toLocaleString()+' ₽';
+  const rev=(revB||[]).reduce((s,b)=>s+(b.services?.price||0),0);
+  document.getElementById('rev-amount').textContent=rev.toLocaleString()+' ₽';
+  document.getElementById('rev-label').textContent=revLabel;
   document.getElementById('s-total').textContent=(allB||[]).length;
   const phones=new Set((allB||[]).map(b=>b.client_phone));
   document.getElementById('s-clients').textContent=phones.size;
@@ -1077,7 +1202,8 @@ async function loadStats(){
   (allB||[]).forEach(b=>{const n=b.services?.name;if(n)svcCount[n]=(svcCount[n]||0)+1;});
   const sorted=Object.entries(svcCount).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const max=sorted[0]?.[1]||1;
-  document.getElementById('services-chart').innerHTML=sorted.length===0?'<div style="color:var(--mid);font-size:1rem">Нет данных</div>':sorted.map(([name,count])=>`<div class="chart-bar-row"><div class="chart-bar-label">${name}</div><div class="chart-bar"><div class="chart-bar-fill" style="width:${Math.round(count/max*100)}%"></div></div><div class="chart-bar-val">${count} раз</div></div>`).join('');
+  document.getElementById('services-chart').innerHTML=sorted.length===0?'<div style="color:var(--mid);font-size:1rem">Нет данных</div>':
+    sorted.map(([name,count])=>`<div class="chart-bar-row"><div class="chart-bar-label">${name}</div><div class="chart-bar"><div class="chart-bar-fill" style="width:${Math.round(count/max*100)}%"></div></div><div class="chart-bar-val">${count} раз</div></div>`).join('');
 }
 
 async function loadBlacklist(){
