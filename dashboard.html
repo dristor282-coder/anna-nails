@@ -534,11 +534,11 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     <div class="form-group"><label>Название</label><input type="text" id="s-name" placeholder="Маникюр с покрытием"></div>
     <div class="form-group"><label>Описание <span style="color:var(--mid);font-weight:400">(необязательно)</span></label><textarea id="s-desc" placeholder="Укажите что входит в услугу..." style="resize:vertical;min-height:80px"></textarea></div>
     <div class="form-row">
-      <div class="form-group"><label>Цена (₽)</label><input type="number" id="s-price" placeholder="1500"></div>
+      <div class="form-group"><label>Цена (₽)</label><input type="text" inputmode="numeric" id="s-price" placeholder="1500" style="color:#1A1614;background:#fff"></div>
       <div class="form-group">
         <label>Длительность</label>
         <div style="display:flex;gap:0.5rem;align-items:center">
-          <input type="number" id="s-duration-val" placeholder="60" min="1" style="flex:1;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark) !important;background:var(--bg);outline:none;-webkit-appearance:none;-moz-appearance:textfield">
+          <input type="text" inputmode="numeric" id="s-duration-val" placeholder="60" min="1" style="flex:1;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:#1A1614;background:#fff;outline:none">
           <select id="s-duration-unit" style="padding:0.8rem 0.75rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark) !important;background:var(--bg);outline:none">
             <option value="min">мин</option>
             <option value="hour">час</option>
@@ -932,8 +932,8 @@ function openEditService(id,name,price,duration,emoji,desc){
 async function saveService(){
   const id=document.getElementById('s-id').value;
   const name=document.getElementById('s-name').value;
-  const price=parseInt(document.getElementById('s-price').value);
-  const dVal=parseInt(document.getElementById('s-duration-val').value);
+  const price=parseInt(document.getElementById('s-price').value.replace(/\D/g,''));
+  const dVal=parseInt(document.getElementById('s-duration-val').value.replace(/\D/g,''));
   const dUnit=document.getElementById('s-duration-unit').value;
   const duration=dUnit==='hour'?dVal*60:dVal;
   const emoji=document.getElementById('s-emoji').value||'💅';
