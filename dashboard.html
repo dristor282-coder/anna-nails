@@ -105,9 +105,11 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
   .visit-row{flex-wrap:wrap;gap:0.25rem}
   .visit-date{min-width:auto;width:100%}
 
-  /* Статистика */
-  .stats-section{grid-template-columns:1fr}
-  .stats-big-card .num{font-size:1.8rem}
+  /* Статистика страница */
+  .stats-section{display:flex;flex-direction:column;gap:0.5rem}
+  .stats-big-card{display:flex;align-items:center;gap:1rem;padding:0.85rem 1.1rem}
+  .stats-big-card .num{font-size:1.6rem;min-width:80px}
+  .stats-big-card .lbl{font-size:0.95rem}
 
   /* Рабочие часы */
   .work-hours-grid{grid-template-columns:1fr}
@@ -1099,7 +1101,19 @@ async function saveBlacklist(){
 
 async function removeBlacklist(id){if(!confirm('Удалить из чёрного списка?'))return;await api('DELETE',`blacklist?id=eq.${id}`);loadBlacklist();}
 
-function openAddBooking(){document.getElementById('b-date').value=fd(bookDate);document.getElementById('modal-booking').classList.add('open');}
+function openAddBooking(){
+  document.getElementById('b-date').value=fd(bookDate);
+  document.getElementById('b-name').value='';
+  document.getElementById('b-phone').value='';
+  document.getElementById('b-time').value='';
+  document.getElementById('b-comment').value='';
+  // Обновим услуги в селекте если они есть
+  const sel=document.getElementById('b-service');
+  if(services.length>0){
+    sel.innerHTML=services.map(s=>`<option value="${s.id}">${s.name} — ${s.price} ₽ (${s.duration} мин)</option>`).join('');
+  }
+  document.getElementById('modal-booking').classList.add('open');
+}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 async function saveBooking(){
