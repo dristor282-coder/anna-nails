@@ -228,6 +228,7 @@ nav ul{display:none}
     </div>
     <button class="form-submit" id="sms-confirm-btn" onclick="confirmSmsCode()">Подтвердить</button>
     <p style="text-align:center;margin-top:1rem;font-size:0.9rem;color:var(--mid)">Не пришло? <button onclick="resendCode()" style="background:none;border:none;color:var(--rose);cursor:pointer;font-size:0.9rem;font-family:var(--font-sans)">Отправить повторно</button></p>
+    <p id="sms-test-hint" style="text-align:center;margin-top:0.5rem;font-size:0.9rem;color:var(--rose);font-weight:500"></p>
   </div>
 </div>
 
@@ -657,10 +658,14 @@ async function sendSmsCode(phone){
   const code = String(Math.floor(1000 + Math.random() * 9000));
   const cleanPhone = phone.replace(/\D/g,'');
   const msg = encodeURIComponent(`Ваш код подтверждения: ${code}`);
-  await fetch(`https://smsc.ru/sys/send.php?login=${SMSC_LOGIN}&psw=${encodeURIComponent(SMSC_PASS)}&phones=${cleanPhone}&mes=${msg}&fmt=3`, {mode:'no-cors'});
+  // tst=1 — тестовый режим, SMS не отправляется
+  await fetch(`https://smsc.ru/sys/send.php?login=${SMSC_LOGIN}&psw=${encodeURIComponent(SMSC_PASS)}&phones=${cleanPhone}&mes=${msg}&fmt=3&tst=1`, {mode:'no-cors'});
   // Сохраняем код в Supabase
   const expires = new Date(Date.now() + 5*60*1000).toISOString();
   await api('POST','sms_codes',{phone:cleanPhone,code,expires_at:expires});
+  // Показываем код на экране в тестовом режиме
+  const hint = document.getElementById('sms-test-hint');
+  if(hint) hint.textContent = `🧪 Тест: код ${code}`;
   return code;
 }
 
