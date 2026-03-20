@@ -632,7 +632,7 @@ async function loadBookings(){
   const past=ds<todayDs;
   const today=ds===todayDs;
   if(!data||data.length===0){
-    list.innerHTML=past?'<div class="empty-state"><div class="emoji">🗓</div><p>Этот день уже прошёл</p></div>':'<div class="empty-state"><div class="emoji">📭</div><p>Нет записей на этот день</p></div>';
+    list.innerHTML=past?'<div class="empty-state"><div class="emoji">🗓</div><p>В этот день записей не было</p></div>':'<div class="empty-state"><div class="emoji">📭</div><p>Нет записей на этот день</p></div>';
     return;
   }
   const statusLabel=s=>s==='pending'?'Ожидает':s==='confirmed'?'Подтверждено':'Отменено';
