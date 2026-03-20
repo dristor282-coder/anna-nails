@@ -91,13 +91,11 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 
   /* Расписание */
   .schedule-controls{flex-direction:column;gap:0.75rem}
-  .view-tabs{width:100%;justify-content:stretch}
-  .view-tab{flex:1;text-align:center}
-  .schedule-nav{justify-content:center;width:100%}
-  .schedule-nav .nav-label{min-width:140px;font-size:1rem}
-  .week-grid{grid-template-columns:repeat(3,1fr);gap:0.4rem}
-  .month-grid{gap:0.2rem}
-  .month-day{min-height:52px;padding:0.4rem}
+  .view-tabs{width:100%}
+  .view-tab{flex:1;text-align:center;padding:0.5rem 0.5rem}
+  .schedule-nav{justify-content:center;width:100%;flex-wrap:wrap;gap:0.5rem}
+  .schedule-nav .nav-label{min-width:140px;font-size:1rem;text-align:center}
+  .today-btn{flex:1;text-align:center}
 
   /* Услуги */
   .services-grid{grid-template-columns:1fr}
@@ -108,7 +106,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
   .visit-date{min-width:auto;width:100%}
 
   /* Статистика */
-  .stats-section{grid-template-columns:repeat(2,1fr)}
+  .stats-section{grid-template-columns:1fr}
   .stats-big-card .num{font-size:1.8rem}
 
   /* Рабочие часы */
@@ -548,31 +546,6 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     <div class="modal-actions">
       <button class="btn-outline" onclick="closeModal('modal-day-settings')">Отмена</button>
       <button class="btn" onclick="saveDaySettings()">Сохранить</button>
-    </div>
-  </div>
-</div>
-  <div class="modal">
-    <h3>Исключение для даты</h3>
-    <div class="form-group">
-      <label>Дата</label>
-      <input type="date" id="ex-date">
-    </div>
-    <div class="form-group">
-      <label>Тип</label>
-      <select id="ex-type" onchange="toggleExceptionType()">
-        <option value="off">🔴 Закрыть (выходной)</option>
-        <option value="on">🟢 Открыть (рабочий)</option>
-      </select>
-    </div>
-    <div id="ex-time-group" style="display:none">
-      <div class="form-row">
-        <div class="form-group"><label>Начало работы</label><input type="time" id="ex-start" value="09:00"></div>
-        <div class="form-group"><label>Конец работы</label><input type="time" id="ex-end" value="20:00"></div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-outline" onclick="closeModal('modal-exception')">Отмена</button>
-      <button class="btn" onclick="saveException()">Сохранить</button>
     </div>
   </div>
 </div>
