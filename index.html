@@ -359,7 +359,8 @@ nav ul{display:none}
       <div class="emoji">💅</div>
       <h4>Заявка отправлена!</h4>
       <p id="success-details"></p>
-      <p style="margin-top:0.5rem;margin-bottom:1.5rem">Мастер свяжется с вами для подтверждения</p>
+      <div id="booking-status" style="margin:0.75rem 0;font-size:1rem"></div>
+      <p style="margin-bottom:1.5rem;color:var(--mid);font-size:0.9rem">Обновите страницу чтобы увидеть актуальный статус</p>
       <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">
         <button onclick="bookAgain()" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;background:var(--rose);color:#fff;border:none;border-radius:1rem;padding:0.85rem 1.25rem;cursor:pointer;font-family:var(--font-sans);font-size:0.85rem;min-width:90px">
           <span style="font-size:1.5rem">+</span>Записаться ещё
@@ -707,7 +708,7 @@ async function submitBooking() {
       details: detailsText,
       ts: Date.now()
     }));
-    showSuccess(detailsText);
+    showSuccess(detailsText, 'pending');
   } else {
     btn.disabled = false;
     btn.textContent = 'Записаться';
@@ -715,10 +716,20 @@ async function submitBooking() {
   }
 }
 
-function showSuccess(detailsText) {
+function showSuccess(detailsText, status) {
   document.getElementById('booking-form').style.display = 'none';
   document.getElementById('success-msg').style.display = 'block';
   document.getElementById('success-details').textContent = detailsText;
+  const statusEl = document.getElementById('booking-status');
+  if (statusEl) {
+    if (status === 'confirmed') {
+      statusEl.innerHTML = '<span style="color:#4A9B6F;font-weight:500">✅ Запись подтверждена мастером</span>';
+    } else if (status === 'cancelled') {
+      statusEl.innerHTML = '<span style="color:#E24B4A;font-weight:500">❌ Запись отменена мастером</span>';
+    } else {
+      statusEl.innerHTML = '<span style="color:var(--mid)">⏳ Ожидает подтверждения мастера</span>';
+    }
+  }
 }
 
 function showSmsModal(name, phone, isExisting){
@@ -1074,16 +1085,27 @@ function showToast(msg, type='success') {
 }
 
 // Восстанавливаем состояние после перезагрузки
-function restoreBookingState() {
+async function restoreBookingState() {
   try {
     const saved = JSON.parse(localStorage.getItem('last_booking'));
     if (!saved) return;
-    if (Date.now() - saved.ts < 24 * 60 * 60 * 1000) {
-      lastBookingId = saved.id;
-      showSuccess(saved.details);
-    } else {
+    if (Date.now() - saved.ts > 24 * 60 * 60 * 1000) {
       localStorage.removeItem('last_booking');
+      return;
     }
+    lastBookingId = saved.id;
+    // Проверяем актуальный статус
+    if (saved.id) {
+      const data = await api('GET', 'bookings', null, `?id=eq.${saved.id}&select=status,booking_date,start_time`);
+      if (data && data[0]) {
+        const b = data[0];
+        const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+        const [y,m,d] = b.booking_date.split('-').map(Number);
+        showSuccess(`${d} ${months[m-1]} в ${b.start_time.slice(0,5)}`, b.status);
+        return;
+      }
+    }
+    showSuccess(saved.details, 'pending');
   } catch(e) {}
 }
 
