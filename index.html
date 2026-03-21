@@ -212,6 +212,7 @@ nav ul{display:none}
     <li><a href="#booking">Запись</a></li>
   </ul>
   <button class="nav-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Записаться</button>
+  <a href="cabinet.html" style="background:none;border:0.5px solid var(--border);color:var(--dark);padding:0.5rem 1rem;border-radius:2rem;font-size:0.85rem;cursor:pointer;font-family:var(--font-sans);transition:all 0.2s;text-decoration:none;margin-left:0.5rem">👤 Мои записи</a>
 </nav>
 
 
@@ -361,7 +362,7 @@ nav ul{display:none}
       <p id="success-details"></p>
       <div id="booking-status" style="margin:0.75rem 0;font-size:1rem"></div>
       <p style="margin-bottom:1.5rem;color:var(--mid);font-size:0.9rem">Обновите страницу чтобы увидеть актуальный статус</p>
-      <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">
+      <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem">
         <button onclick="bookAgain()" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;background:var(--rose);color:#fff;border:none;border-radius:1rem;padding:0.85rem 1.25rem;cursor:pointer;font-family:var(--font-sans);font-size:0.85rem;min-width:90px">
           <span style="font-size:1.5rem">+</span>Записаться ещё
         </button>
@@ -371,6 +372,12 @@ nav ul{display:none}
         <button onclick="cancelBooking()" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;background:var(--bg);color:#E24B4A;border:0.5px solid rgba(226,75,74,0.3);border-radius:1rem;padding:0.85rem 1.25rem;cursor:pointer;font-family:var(--font-sans);font-size:0.85rem;min-width:90px">
           <span style="font-size:1.5rem">✕</span>Отменить запись
         </button>
+      </div>
+
+      <!-- История записей -->
+      <div id="history-section" style="text-align:left;border-top:0.5px solid var(--border);padding-top:1.5rem;margin-top:0.5rem">
+        <div style="font-family:var(--font-serif);font-size:1.3rem;margin-bottom:1rem;text-align:center">Ваши <em style="color:var(--rose);font-style:italic">записи</em></div>
+        <div id="history-list"><div style="text-align:center;color:var(--mid);font-size:0.9rem">Загрузка...</div></div>
       </div>
     </div>
   </div>
@@ -730,6 +737,59 @@ function showSuccess(detailsText, status) {
       statusEl.innerHTML = '<span style="color:var(--mid)">⏳ Ожидает подтверждения мастера</span>';
     }
   }
+  // Загружаем историю
+  const phone = document.getElementById('f-phone').value.replace(/\D/g,'');
+  if (phone) loadHistory(phone);
+}
+
+async function loadHistory(phone) {
+  const list = document.getElementById('history-list');
+  if (!list) return;
+  const today = new Date().toISOString().split('T')[0];
+  const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  const days = ['вс','пн','вт','ср','чт','пт','сб'];
+
+  const data = await api('GET','bookings',null,
+    `?master_id=eq.${MASTER_ID}&client_phone=eq.${phone}&order=booking_date.desc&select=*,services(name,emoji)`);
+
+  if (!data || data.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:var(--mid);font-size:0.9rem;padding:1rem">Записей пока нет</div>';
+    return;
+  }
+
+  const statusInfo = {
+    pending: {text:'Ожидает', color:'#E07A3A', bg:'#FDF0E6'},
+    confirmed: {text:'Подтверждено', color:'#4A9B6F', bg:'#E8F5EE'},
+    cancelled: {text:'Отменено', color:'#E24B4A', bg:'#FEF2F2'},
+  };
+
+  list.innerHTML = data.map(b => {
+    const [y,m,d] = b.booking_date.split('-').map(Number);
+    const dow = new Date(y,m-1,d).getDay();
+    const dateStr = `${d} ${months[m-1]} (${days[dow]})`;
+    const isPast = b.booking_date < today;
+    const st = statusInfo[b.status] || statusInfo.pending;
+    const displayStatus = isPast && b.status !== 'cancelled' ? {text:'Завершено', color:'var(--mid)', bg:'var(--rose-light)'} : st;
+
+    return `<div style="background:var(--bg);border-radius:0.75rem;padding:1rem 1.25rem;border:0.5px solid var(--border);margin-bottom:0.6rem;opacity:${isPast?'0.7':'1'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem">
+        <div>
+          <div style="font-size:1rem;font-weight:500">${b.services?.emoji||'💅'} ${b.services?.name||'—'}</div>
+          <div style="font-size:0.88rem;color:var(--mid)">${dateStr} · ${b.start_time.slice(0,5)}</div>
+        </div>
+        <span style="padding:0.25rem 0.65rem;border-radius:2rem;font-size:0.78rem;font-weight:500;background:${displayStatus.bg};color:${displayStatus.color};white-space:nowrap">${displayStatus.text}</span>
+      </div>
+      ${!isPast && b.status !== 'cancelled' ? `<button onclick="cancelFromHistory('${b.id}')" style="margin-top:0.4rem;font-size:0.82rem;background:none;border:none;color:#E24B4A;cursor:pointer;font-family:var(--font-sans);padding:0;text-decoration:underline">Отменить</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function cancelFromHistory(id) {
+  if (!confirm('Отменить эту запись?')) return;
+  await api('PATCH', `bookings?id=eq.${id}`, {status:'cancelled'});
+  const phone = document.getElementById('f-phone').value.replace(/\D/g,'');
+  loadHistory(phone);
+  showToast('Запись отменена');
 }
 
 function showSmsModal(name, phone, isExisting){
