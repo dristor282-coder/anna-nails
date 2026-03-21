@@ -692,7 +692,14 @@ function timeToMin(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
 function minToTime(m){return`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;}
 
 async function initApp(){
-  userTZ=localStorage.getItem(`tz_${master?.id}`)||'Europe/Moscow';
+  // Загружаем часовой пояс из базы
+  const masterData = await api('GET','masters',null,`?id=eq.${master.id}&select=timezone`);
+  if(masterData?.[0]?.timezone){
+    userTZ = masterData[0].timezone;
+    localStorage.setItem(`tz_${master.id}`, userTZ);
+  } else {
+    userTZ=localStorage.getItem(`tz_${master?.id}`)||'Europe/Moscow';
+  }
   const tzSelect=document.getElementById('tz-select');
   if(tzSelect)tzSelect.value=userTZ;
   document.getElementById('today-date').textContent=fdr(new Date());
@@ -714,6 +721,8 @@ async function initApp(){
 function saveTZ(){
   userTZ=document.getElementById('tz-select').value;
   localStorage.setItem(`tz_${master?.id}`,userTZ);
+  // Сохраняем в базу
+  api('PATCH',`masters?id=eq.${master.id}`,{timezone:userTZ});
   bookDate=new Date();schedDate=new Date();
   document.getElementById('nav-date').textContent=fdr(bookDate);
   loadBookings();
