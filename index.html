@@ -349,6 +349,19 @@ nav ul{display:none}
         </div>
       </div>
       <div class="form-group">
+        <label>Email <span style="color:var(--mid);font-weight:300;font-size:0.9rem">(необязательно)</span></label>
+        <input type="email" id="f-email" placeholder="your@email.com" oninput="onEmailInput()">
+        <div id="email-warning" style="display:none;margin-top:0.5rem;padding:0.65rem 1rem;background:var(--orange-light);border-radius:0.75rem;font-size:0.9rem;color:var(--orange)">
+          ⚠️ Без email вы не будете получать напоминания о записи
+        </div>
+      </div>
+      <div class="form-group" id="reminder-group" style="display:none">
+        <label>Напомнить о записи</label>
+        <select id="f-reminder">
+          <option value="">Не отправлять</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Услуга</label>
         <select id="f-service" onchange="onServiceChange()">
           <option value="">Выберите услугу</option>
@@ -387,7 +400,18 @@ nav ul{display:none}
       <div class="emoji">💅</div>
       <h4>Заявка отправлена!</h4>
       <p id="success-details"></p>
-      <p style="margin-top:0.5rem">Мастер свяжется с вами для подтверждения</p>
+      <p style="margin-top:0.5rem;margin-bottom:1.5rem">Мастер свяжется с вами для подтверждения</p>
+      <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">
+        <button onclick="bookAgain()" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;background:var(--rose);color:#fff;border:none;border-radius:1rem;padding:0.85rem 1.25rem;cursor:pointer;font-family:var(--font-sans);font-size:0.85rem;min-width:90px">
+          <span style="font-size:1.5rem">+</span>Записаться ещё
+        </button>
+        <button onclick="rescheduleBooking()" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;background:var(--bg);color:var(--dark);border:0.5px solid var(--border);border-radius:1rem;padding:0.85rem 1.25rem;cursor:pointer;font-family:var(--font-sans);font-size:0.85rem;min-width:90px">
+          <span style="font-size:1.5rem">↺</span>Перенести запись
+        </button>
+        <button onclick="cancelBooking()" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;background:var(--bg);color:#E24B4A;border:0.5px solid rgba(226,75,74,0.3);border-radius:1rem;padding:0.85rem 1.25rem;cursor:pointer;font-family:var(--font-sans);font-size:0.85rem;min-width:90px">
+          <span style="font-size:1.5rem">✕</span>Отменить запись
+        </button>
+      </div>
     </div>
   </div>
 </section>
@@ -676,43 +700,55 @@ async function verifySmsCode(phone, inputCode){
 async function submitBooking() {
   const name = document.getElementById('f-name').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
+  const email = document.getElementById('f-email').value.trim();
   const serviceId = document.getElementById('f-service').value;
   const date = document.getElementById('f-date').value;
   const time = document.getElementById('f-time').value;
   const comment = document.getElementById('f-comment').value.trim();
+  const reminder = document.getElementById('f-reminder').value;
 
   if (!name || !phone || !serviceId || !date || !time) {
     alert('Пожалуйста, заполните все поля и выберите время');
     return;
   }
 
+  // Показываем предупреждение если нет email но не блокируем
+  showEmailWarning();
+
   const service = servicesData.find(s => s.id === serviceId);
   const endMin = timeToMin(time) + (service?.duration || 60);
   const endTime = minToTime(endMin);
 
-  pendingBooking = {master_id:MASTER_ID,service_id:serviceId,client_name:name,client_phone:phone.replace(/\D/g,''),booking_date:date,start_time:time,end_time:endTime,comment,status:'pending'};
-
-  // Если уже авторизован — сразу записываем
-  if(clientSession && clientSession.phone === phone.replace(/\D/g,'')){
-    await doBooking();
-    return;
-  }
-
-  // Проверяем есть ли клиент
-  const cleanPhone = phone.replace(/\D/g,'');
-  const existing = await api('GET','clients',null,`?phone=eq.${cleanPhone}`);
-
   const btn = document.getElementById('f-submit');
   btn.disabled = true;
-  btn.textContent = 'Отправляем код...';
+  btn.textContent = 'Отправляем...';
 
-  await sendSmsCode(phone);
+  const result = await api('POST', 'bookings', {
+    master_id: MASTER_ID,
+    service_id: serviceId,
+    client_name: name,
+    client_phone: phone.replace(/\D/g,''),
+    client_email: email,
+    booking_date: date,
+    start_time: time,
+    end_time: endTime,
+    comment: comment,
+    reminder_hours: reminder ? parseInt(reminder) : null,
+    status: 'pending'
+  });
 
-  btn.disabled = false;
-  btn.textContent = 'Записаться';
-
-  // Показываем форму ввода кода
-  showSmsModal(name, phone, existing && existing.length > 0);
+  if (result) {
+    lastBookingId = result[0]?.id || null;
+    document.getElementById('booking-form').style.display = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+    const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+    const [y,m,d] = date.split('-').map(Number);
+    document.getElementById('success-details').textContent = `${d} ${months[m-1]} в ${time}`;
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Записаться';
+    alert('Что-то пошло не так, попробуйте ещё раз');
+  }
 }
 
 function showSmsModal(name, phone, isExisting){
@@ -975,25 +1011,48 @@ function renderBcalWithAvailable(availableDates) {
 
 function selectBcalDate(ds) {
   document.getElementById('f-date').value = ds;
-  // Обновляем [y,m] из bcalDate чтобы не пересчитывать cells
-  const serviceId = document.getElementById('f-service').value;
-  if(serviceId) {
-    // Перерисуем выделение через loadBcalMonth (слоты тоже обновим)
-    const y = bcalDate.getFullYear(), m = bcalDate.getMonth();
-    const last = new Date(y, m+1, 0);
-    // Быстрый визуальный отклик
-    document.querySelectorAll('.bcal-day.selected').forEach(el => {
-      el.classList.remove('selected'); el.classList.add('available');
-    });
-    const allDays = document.querySelectorAll('.bcal-day.available, .bcal-day.selected');
-    allDays.forEach(el => {
-      if(el.querySelector('div')?.textContent == new Date(ds+'T12:00:00').getDate() &&
-         !el.classList.contains('other')) {
-        el.classList.add('selected'); el.classList.remove('available');
-      }
-    });
-  }
+  document.querySelectorAll('.bcal-day.selected').forEach(el => {
+    el.classList.remove('selected'); el.classList.add('available');
+  });
+  document.querySelectorAll('.bcal-day.available').forEach(el => {
+    if(el.querySelector('div')?.textContent == new Date(ds+'T12:00:00').getDate() &&
+       !el.classList.contains('other')) {
+      el.classList.add('selected'); el.classList.remove('available');
+    }
+  });
   loadSlots();
+  updateReminderOptions(ds);
+}
+
+function updateReminderOptions(ds) {
+  const email = document.getElementById('f-email').value.trim();
+  const reminderGroup = document.getElementById('reminder-group');
+  if (!ds) { reminderGroup.style.display = 'none'; return; }
+
+  const now = new Date();
+  const [y,m,d] = ds.split('-').map(Number);
+  const bookingDate = new Date(y, m-1, d);
+  const hoursUntil = Math.floor((bookingDate - now) / (1000*60*60));
+
+  const allOptions = [
+    {value:'1', label:'За 1 час'},
+    {value:'2', label:'За 2 часа'},
+    {value:'3', label:'За 3 часа'},
+    {value:'6', label:'За 6 часов'},
+    {value:'12', label:'За 12 часов'},
+    {value:'24', label:'За 1 день'},
+    {value:'48', label:'За 2 дня'},
+    {value:'72', label:'За 3 дня'},
+    {value:'120', label:'За 5 дней'},
+    {value:'168', label:'За 7 дней'},
+  ];
+
+  const available = allOptions.filter(o => parseInt(o.value) < hoursUntil);
+  const sel = document.getElementById('f-reminder');
+  sel.innerHTML = '<option value="">Не отправлять</option>' +
+    available.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+
+  reminderGroup.style.display = email && available.length > 0 ? 'block' : 'none';
 }
 
 async function bcalPrev() {
@@ -1010,8 +1069,81 @@ async function bcalNext() {
   await loadBcalMonth();
 }
 
-loadServices();
-loadClientSession();
+function onEmailInput() {
+  const email = document.getElementById('f-email').value.trim();
+  const warning = document.getElementById('email-warning');
+  // Показываем предупреждение только если поле было в фокусе и осталось пустым
+  warning.style.display = 'none';
+  updateReminderOptions(document.getElementById('f-date').value);
+  saveFormData();
+}
+
+function showEmailWarning() {
+  const email = document.getElementById('f-email').value.trim();
+  const warning = document.getElementById('email-warning');
+  if (!email) warning.style.display = 'block';
+}
+function saveFormData() {
+  localStorage.setItem('booking_form', JSON.stringify({
+    name: document.getElementById('f-name').value,
+    phone: document.getElementById('f-phone').value,
+    email: document.getElementById('f-email').value,
+  }));
+}
+
+function loadFormData() {
+  try {
+    const data = JSON.parse(localStorage.getItem('booking_form'));
+    if (!data) return;
+    if (data.name) document.getElementById('f-name').value = data.name;
+    if (data.phone) document.getElementById('f-phone').value = data.phone;
+    if (data.email) document.getElementById('f-email').value = data.email;
+  } catch(e) {}
+}
+
+// Вешаем автосохранение на поля
+document.getElementById('f-name').addEventListener('input', saveFormData);
+document.getElementById('f-phone').addEventListener('input', saveFormData);
+document.getElementById('f-email').addEventListener('input', saveFormData);
+
+let lastBookingId = null;
+
+function bookAgain() {
+  document.getElementById('success-msg').style.display = 'none';
+  document.getElementById('booking-form').style.display = 'block';
+  // Сбрасываем только дату/время/услугу, но не контакты
+  document.getElementById('f-service').value = '';
+  document.getElementById('f-date').value = '';
+  document.getElementById('f-time').value = '';
+  document.getElementById('slots-group').style.display = 'none';
+  document.getElementById('cal-group').style.display = 'none';
+  document.getElementById('cal-hint').style.display = 'block';
+  document.getElementById('reminder-group').style.display = 'none';
+  document.getElementById('f-comment').value = '';
+  document.getElementById('f-submit').disabled = false;
+  document.getElementById('f-submit').textContent = 'Записаться';
+  bcalDate = new Date();
+}
+
+async function rescheduleBooking() {
+  if (!lastBookingId) return;
+  // Отменяем текущую и открываем форму заново
+  await api('PATCH', `bookings?id=eq.${lastBookingId}`, {status: 'cancelled'});
+  bookAgain();
+  alert('Запись отменена. Выберите новое время.');
+}
+
+async function cancelBooking() {
+  if (!lastBookingId) { bookAgain(); return; }
+  if (!confirm('Вы уверены что хотите отменить запись?')) return;
+  await api('PATCH', `bookings?id=eq.${lastBookingId}`, {status: 'cancelled'});
+  document.getElementById('success-msg').innerHTML = `
+    <div class="emoji">😔</div>
+    <h4>Запись отменена</h4>
+    <p style="margin-top:0.5rem;margin-bottom:1.5rem">Будем рады видеть вас снова!</p>
+    <button onclick="bookAgain()" style="background:var(--rose);color:#fff;border:none;border-radius:2rem;padding:0.85rem 2rem;cursor:pointer;font-family:var(--font-sans);font-size:1rem">Записаться снова</button>
+  `;
+}
 
 // LIGHTBOX
 let lbIndex=0,lbItems=[];
@@ -1055,6 +1187,10 @@ document.addEventListener('keydown',e=>{
     if(e.key==='Escape')closeLightbox();
   }
 });
+
+loadServices();
+loadClientSession();
+loadFormData();
 </script>
 </body>
 </html>
