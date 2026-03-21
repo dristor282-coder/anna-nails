@@ -780,6 +780,10 @@ async function updStatus(id,status){
   await api('PATCH',`bookings?id=eq.${id}`,{status, notify_sent: false});
   loadBookings();
   loadDashStats();
+  // Через 30 секунд ставим notify_sent=true (после того как n8n успеет отправить письмо)
+  setTimeout(async()=>{
+    await api('PATCH',`bookings?id=eq.${id}`,{notify_sent: true});
+  }, 30000);
 }
 
 function openReschedule(id,name,time){
