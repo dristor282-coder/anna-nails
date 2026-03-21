@@ -212,49 +212,8 @@ nav ul{display:none}
     <li><a href="#booking">Запись</a></li>
   </ul>
   <button class="nav-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Записаться</button>
-  <button id="client-auth-btn" onclick="openClientLogin()" style="background:none;border:0.5px solid var(--border);color:var(--dark);padding:0.5rem 1rem;border-radius:2rem;font-size:0.85rem;cursor:pointer;font-family:var(--font-sans);transition:all 0.2s;margin-left:0.5rem">👤 Войти</button>
 </nav>
 
-<!-- MODAL: SMS подтверждение при записи -->
-<div class="modal-overlay" id="sms-modal" style="z-index:300">
-  <div class="modal">
-    <h3>Подтвердите номер</h3>
-    <input type="hidden" id="sms-modal-phone-hidden">
-    <input type="hidden" id="sms-modal-name">
-    <p style="color:var(--mid);margin-bottom:1.5rem">Код отправлен на <strong id="sms-modal-phone"></strong></p>
-    <div class="form-group">
-      <label>Код из SMS</label>
-      <input type="text" inputmode="numeric" id="sms-code-input" placeholder="0000" maxlength="4" style="font-size:1.5rem;text-align:center;letter-spacing:0.5em">
-    </div>
-    <button class="form-submit" id="sms-confirm-btn" onclick="confirmSmsCode()">Подтвердить</button>
-    <p style="text-align:center;margin-top:1rem;font-size:0.9rem;color:var(--mid)">Не пришло? <button onclick="resendCode()" style="background:none;border:none;color:var(--rose);cursor:pointer;font-size:0.9rem;font-family:var(--font-sans)">Отправить повторно</button></p>
-    <p id="sms-test-hint" style="text-align:center;margin-top:0.5rem;font-size:0.9rem;color:var(--rose);font-weight:500"></p>
-  </div>
-</div>
-
-<!-- MODAL: Вход в аккаунт -->
-<div class="modal-overlay" id="client-login-modal" style="z-index:300">
-  <div class="modal">
-    <h3>Войти в аккаунт</h3>
-    <div id="login-step1">
-      <div class="form-group">
-        <label>Номер телефона</label>
-        <input type="tel" id="login-phone-input" placeholder="+7 (___) ___-__-__">
-      </div>
-      <button class="form-submit" onclick="sendLoginCode()">Получить код</button>
-      <button onclick="document.getElementById('client-login-modal').classList.remove('open')" style="width:100%;margin-top:0.75rem;padding:0.85rem;border-radius:3rem;font-size:0.9rem;background:none;border:0.5px solid var(--border);cursor:pointer;font-family:var(--font-sans);color:var(--dark)">Отмена</button>
-    </div>
-    <div id="login-step2" style="display:none">
-      <input type="hidden" id="login-phone-hidden">
-      <p style="color:var(--mid);margin-bottom:1.5rem">Код отправлен на ваш номер</p>
-      <div class="form-group">
-        <label>Код из SMS</label>
-        <input type="text" inputmode="numeric" id="login-code-input" placeholder="0000" maxlength="4" style="font-size:1.5rem;text-align:center;letter-spacing:0.5em">
-      </div>
-      <button class="form-submit" onclick="confirmLoginCode()">Войти</button>
-    </div>
-  </div>
-</div>
 
 <div class="hero">
   <div class="hero-text">
