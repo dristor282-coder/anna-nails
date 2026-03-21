@@ -88,7 +88,9 @@ section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
 
 .portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:3rem}
 .portfolio-item{border-radius:1rem;overflow:hidden;aspect-ratio:1;cursor:pointer;position:relative}
-.portfolio-item .ph{width:100%;height:100%;background:linear-gradient(135deg,var(--rose-light),#EDD5D2);display:flex;align-items:center;justify-content:center;transition:transform 0.3s}
+.portfolio-item img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;transition:transform 0.3s}
+.portfolio-item:hover img{transform:scale(1.05)}
+.portfolio-item .ph{width:100%;height:100%;background:linear-gradient(135deg,var(--rose-light),#EDD5D2);display:flex;align-items:center;justify-content:center;transition:transform 0.3s;pointer-events:none}
 .portfolio-item:hover .ph{transform:scale(1.05)}
 .ph-label{font-family:var(--font-serif);font-size:1rem;color:var(--rose-dark);opacity:0.6;font-style:italic}
 .portfolio-item:nth-child(2) .ph{background:linear-gradient(135deg,#F0DDD5,#E8C4BC)}
@@ -212,7 +214,6 @@ nav ul{display:none}
     <li><a href="#booking">Запись</a></li>
   </ul>
   <button class="nav-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Записаться</button>
-  <a href="cabinet.html" style="background:none;border:0.5px solid var(--border);color:var(--dark);padding:0.5rem 1rem;border-radius:2rem;font-size:0.85rem;cursor:pointer;font-family:var(--font-sans);transition:all 0.2s;text-decoration:none;margin-left:0.5rem">👤 Мои записи</a>
 </nav>
 
 
@@ -260,7 +261,7 @@ nav ul{display:none}
     <div class="section-label">Мои работы</div>
     <div class="section-title">Портфолио</div>
     <div class="portfolio-grid">
-      <div class="portfolio-item"><img src="shop_property_file_1000_765.jpg" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="portfolio-item" onclick="openLightbox(0)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
       <div class="portfolio-item" onclick="openLightbox(1)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
       <div class="portfolio-item" onclick="openLightbox(2)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
       <div class="portfolio-item" onclick="openLightbox(3)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
