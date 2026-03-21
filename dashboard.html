@@ -701,9 +701,12 @@ async function initApp(){
   // Автоматически подтверждаем все прошедшие pending записи
   const today=fd(new Date());
   const now=new Date();
-  const nowTime=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  await api('PATCH',`bookings?master_id=eq.${master.id}&status=eq.pending&booking_date=lt.${today}`,{status:'confirmed'});
-  await api('PATCH',`bookings?master_id=eq.${master.id}&status=eq.pending&booking_date=eq.${today}&end_time=lt.${nowTime}`,{status:'confirmed'});
+  // Используем локальное время с учётом часового пояса мастера
+  const nowLocal=new Date(now.toLocaleString('en-US',{timeZone:userTZ}));
+  const nowTime=`${String(nowLocal.getHours()).padStart(2,'0')}:${String(nowLocal.getMinutes()).padStart(2,'0')}`;
+  const todayLocal=`${nowLocal.getFullYear()}-${String(nowLocal.getMonth()+1).padStart(2,'0')}-${String(nowLocal.getDate()).padStart(2,'0')}`;
+  await api('PATCH',`bookings?master_id=eq.${master.id}&status=eq.pending&booking_date=lt.${todayLocal}`,{status:'confirmed'});
+  await api('PATCH',`bookings?master_id=eq.${master.id}&status=eq.pending&booking_date=eq.${todayLocal}&end_time=lt.${nowTime}`,{status:'confirmed'});
   await loadBookings();
   await loadDashStats();
 }
@@ -747,11 +750,12 @@ async function loadBookings(){
     return;
   }
   const statusLabel=s=>s==='pending'?'Ожидает':s==='confirmed'?'Подтверждено':'Отменено';
-  const nowH=now.getHours(),nowM=now.getMinutes();
+  const nowLocal=new Date(now.toLocaleString('en-US',{timeZone:userTZ}));
+  const nowH=nowLocal.getHours(),nowM=nowLocal.getMinutes();
   list.innerHTML=data.map(b=>{
-    // Сравниваем время как строки HH:MM
-    const[bH,bM]=b.start_time.slice(0,5).split(':').map(Number);
-    const bPast=past||(today&&(bH<nowH||(bH===nowH&&bM<=nowM)));
+    // Сравниваем end_time а не start_time — запись завершена когда она закончилась
+    const[eH,eM]=b.end_time.slice(0,5).split(':').map(Number);
+    const bPast=past||(today&&(eH<nowH||(eH===nowH&&eM<=nowM)));
     const isBl=blPhones.has(b.client_phone);
     const displayStatus=bPast&&b.status!=='cancelled'?'past':b.status;
     const displayLabel=bPast&&b.status!=='cancelled'?'Завершено':statusLabel(b.status);
@@ -804,9 +808,10 @@ async function renderSched(){
     const past=isPast(ds),today=isToday(ds);
     const data=await api('GET','bookings',null,`?master_id=eq.${master.id}&booking_date=eq.${ds}&status=neq.cancelled&order=start_time.asc&select=*,services(name,duration)`);
     const now=new Date();
+    const nowLocal=new Date(now.toLocaleString('en-US',{timeZone:userTZ}));
     content.innerHTML=`<div class="day-view-card"><div class="day-view-title">${DAYS_F[schedDate.getDay()]}, ${schedDate.getDate()} ${MON_G[schedDate.getMonth()]}${today?' — сегодня':past?' — прошедший день':''}</div>
     ${!data||data.length===0?`<div class="empty-state"><div class="emoji">${past?'🗓':'📭'}</div><p>${past?'Этот день уже прошёл':'Нет записей'}</p></div>`:
-      data.map(b=>{const bPast=past||(today&&new Date(`${ds}T${b.start_time}`)<now);return`<div class="day-view-slot"><div class="day-view-time">${b.start_time.slice(0,5)}<br><span>${b.end_time.slice(0,5)}</span></div><div class="day-view-booking ${bPast?'past-booking':''}"><strong>${b.client_name}</strong>${b.services?.name||''} · ${b.services?.duration||''}мин${bPast?' — завершено':''}</div></div>`;}).join('')}
+      data.map(b=>{const bPast=past||(today&&new Date(`${ds}T${b.end_time}`)<nowLocal);return`<div class="day-view-slot"><div class="day-view-time">${b.start_time.slice(0,5)}<br><span>${b.end_time.slice(0,5)}</span></div><div class="day-view-booking ${bPast?'past-booking':''}"><strong>${b.client_name}</strong>${b.services?.name||''} · ${b.services?.duration||''}мин${bPast?' — завершено':''}</div></div>`;}).join('')}
     </div>`;
   } else if(schedView==='week'){
     const mon=getMon(schedDate),sun=new Date(mon);sun.setDate(mon.getDate()+6);
