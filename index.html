@@ -698,16 +698,27 @@ async function submitBooking() {
 
   if (result) {
     lastBookingId = result[0]?.id || null;
-    document.getElementById('booking-form').style.display = 'none';
-    document.getElementById('success-msg').style.display = 'block';
     const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
     const [y,m,d] = date.split('-').map(Number);
-    document.getElementById('success-details').textContent = `${d} ${months[m-1]} в ${time}`;
+    const detailsText = `${d} ${months[m-1]} в ${time}`;
+    // Сохраняем состояние
+    localStorage.setItem('last_booking', JSON.stringify({
+      id: lastBookingId,
+      details: detailsText,
+      ts: Date.now()
+    }));
+    showSuccess(detailsText);
   } else {
     btn.disabled = false;
     btn.textContent = 'Записаться';
-    alert('Что-то пошло не так, попробуйте ещё раз');
+    showToast('Что-то пошло не так, попробуйте ещё раз', 'error');
   }
+}
+
+function showSuccess(detailsText) {
+  document.getElementById('booking-form').style.display = 'none';
+  document.getElementById('success-msg').style.display = 'block';
+  document.getElementById('success-details').textContent = detailsText;
 }
 
 function showSmsModal(name, phone, isExisting){
@@ -984,7 +995,6 @@ function selectBcalDate(ds) {
 }
 
 function updateReminderOptions(ds) {
-  const email = document.getElementById('f-email').value.trim();
   const reminderGroup = document.getElementById('reminder-group');
   if (!ds) { reminderGroup.style.display = 'none'; return; }
 
@@ -1007,11 +1017,13 @@ function updateReminderOptions(ds) {
   ];
 
   const available = allOptions.filter(o => parseInt(o.value) < hoursUntil);
+  if (available.length === 0) { reminderGroup.style.display = 'none'; return; }
+
   const sel = document.getElementById('f-reminder');
   sel.innerHTML = '<option value="">Не отправлять</option>' +
     available.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
 
-  reminderGroup.style.display = email && available.length > 0 ? 'block' : 'none';
+  reminderGroup.style.display = 'block';
 }
 
 async function bcalPrev() {
@@ -1042,6 +1054,39 @@ function showEmailWarning() {
   const warning = document.getElementById('email-warning');
   if (!email) warning.style.display = 'block';
 }
+// Toast уведомления
+function showToast(msg, type='success') {
+  let toast = document.getElementById('site-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'site-toast';
+    toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);color:#fff;padding:0.85rem 1.5rem;border-radius:1rem;font-size:1rem;z-index:9999;transition:all 0.3s;pointer-events:none;opacity:0;max-width:90vw;text-align:center';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = (type==='error'?'✕ ':'✓ ') + msg;
+  toast.style.background = type==='error' ? '#E24B4A' : '#4A9B6F';
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(100px)';
+  }, 3500);
+}
+
+// Восстанавливаем состояние после перезагрузки
+function restoreBookingState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('last_booking'));
+    if (!saved) return;
+    if (Date.now() - saved.ts < 24 * 60 * 60 * 1000) {
+      lastBookingId = saved.id;
+      showSuccess(saved.details);
+    } else {
+      localStorage.removeItem('last_booking');
+    }
+  } catch(e) {}
+}
+
 function saveFormData() {
   localStorage.setItem('booking_form', JSON.stringify({
     name: document.getElementById('f-name').value,
@@ -1086,16 +1131,19 @@ function bookAgain() {
 
 async function rescheduleBooking() {
   if (!lastBookingId) return;
-  // Отменяем текущую и открываем форму заново
+  if (!confirm('Отменить текущую запись и выбрать новое время?')) return;
   await api('PATCH', `bookings?id=eq.${lastBookingId}`, {status: 'cancelled'});
+  localStorage.removeItem('last_booking');
   bookAgain();
-  alert('Запись отменена. Выберите новое время.');
+  showToast('Запись отменена — выберите новое время');
 }
 
 async function cancelBooking() {
-  if (!lastBookingId) { bookAgain(); return; }
   if (!confirm('Вы уверены что хотите отменить запись?')) return;
-  await api('PATCH', `bookings?id=eq.${lastBookingId}`, {status: 'cancelled'});
+  if (lastBookingId) {
+    await api('PATCH', `bookings?id=eq.${lastBookingId}`, {status: 'cancelled'});
+  }
+  localStorage.removeItem('last_booking');
   document.getElementById('success-msg').innerHTML = `
     <div class="emoji">😔</div>
     <h4>Запись отменена</h4>
@@ -1150,6 +1198,7 @@ document.addEventListener('keydown',e=>{
 loadServices();
 loadClientSession();
 loadFormData();
+restoreBookingState();
 </script>
 </body>
 </html>
