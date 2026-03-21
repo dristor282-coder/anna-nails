@@ -776,7 +776,11 @@ async function loadBookings(){
   }).join('');
 }
 
-async function updStatus(id,status){await api('PATCH',`bookings?id=eq.${id}`,{status});loadBookings();loadDashStats();}
+async function updStatus(id,status){
+  await api('PATCH',`bookings?id=eq.${id}`,{status, notify_sent: false});
+  loadBookings();
+  loadDashStats();
+}
 
 function openReschedule(id,name,time){
   document.getElementById('r-booking-id').value=id;
