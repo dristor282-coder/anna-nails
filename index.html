@@ -262,7 +262,7 @@ nav ul{display:none}
     <div class="section-label">Мои работы</div>
     <div class="section-title">Портфолио</div>
     <div class="portfolio-grid">
-   <div class="portfolio-item" onclick="openLightbox(0)"><img src="shop_property_file_1000_765.jpg" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="portfolio-item" onclick="openLightbox(0)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
       <div class="portfolio-item" onclick="openLightbox(1)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
       <div class="portfolio-item" onclick="openLightbox(2)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
       <div class="portfolio-item" onclick="openLightbox(3)"><div class="ph"><span class="ph-label">фото работы</span></div></div>
@@ -718,12 +718,6 @@ async function submitBooking() {
       ts: Date.now()
     }));
     showSuccess(detailsText, 'pending');
-    // Через 2 минуты ставим master_notified=true (n8n успеет отправить за 1 мин)
-    if (lastBookingId) {
-      setTimeout(async () => {
-        await api('PATCH', `bookings?id=eq.${lastBookingId}`, {master_notified: true});
-      }, 120000);
-    }
   } else {
     btn.disabled = false;
     btn.textContent = 'Записаться';
