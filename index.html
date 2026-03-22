@@ -547,7 +547,7 @@ async function loadSlots() {
   const exceptionData = await api('GET', 'schedule', null,
     `?master_id=eq.${MASTER_ID}&specific_date=eq.${date}`);
 
-  let workStart, workEnd;
+  let workStart, workEnd, fixedSlots = null;
 
   if (exceptionData && exceptionData.length > 0) {
     const ex = exceptionData[0];
@@ -557,6 +557,7 @@ async function loadSlots() {
     }
     workStart = timeToMin(ex.start_time);
     workEnd = timeToMin(ex.end_time);
+    if (ex.fixed_slots) fixedSlots = ex.fixed_slots.split(',').filter(s=>s.trim());
   } else {
     // Проверяем базовое расписание по дню недели
     const [y, m, d] = date.split('-').map(Number);
@@ -570,6 +571,7 @@ async function loadSlots() {
     }
     workStart = timeToMin(scheduleData[0].start_time);
     workEnd = timeToMin(scheduleData[0].end_time);
+    if (scheduleData[0].fixed_slots) fixedSlots = scheduleData[0].fixed_slots.split(',').filter(s=>s.trim());
   }
 
   const existingBookings = await api('GET', 'bookings', null,
@@ -584,12 +586,25 @@ async function loadSlots() {
   const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const nowMin = today === date ? now.getHours() * 60 + now.getMinutes() : 0;
 
-  const slots = [];
-  for (let min = workStart; min + service.duration <= workEnd; min += 30) {
-    if (min < nowMin) continue; // убираем только уже прошедшие
-    const end = min + service.duration;
-    const conflict = booked.some(b => min < b.end && end > b.start);
-    if (!conflict) slots.push(min);
+  let slots = [];
+
+  if (fixedSlots && fixedSlots.length > 0) {
+    // Фиксированные слоты
+    for (const slotTime of fixedSlots) {
+      const min = timeToMin(slotTime.trim());
+      if (min < nowMin) continue;
+      const end = min + service.duration;
+      const conflict = booked.some(b => min < b.end && end > b.start);
+      if (!conflict) slots.push(min);
+    }
+  } else {
+    // Автоматические слоты каждые 30 минут
+    for (let min = workStart; min + service.duration <= workEnd; min += 30) {
+      if (min < nowMin) continue;
+      const end = min + service.duration;
+      const conflict = booked.some(b => min < b.end && end > b.start);
+      if (!conflict) slots.push(min);
+    }
   }
 
   if (slots.length === 0) {
