@@ -304,11 +304,27 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">Nail <span>Dashboard</span></div>
-    <div class="login-sub">Панель управления мастера</div>
-    <input type="email" id="login-email" placeholder="Email">
-    <input type="password" id="login-password" placeholder="Пароль">
-    <button class="login-btn" onclick="login()">Войти</button>
-    <div class="login-error" id="login-error">Неверный email или пароль</div>
+
+    <!-- ВХОД -->
+    <div id="login-form">
+      <div class="login-sub">Панель управления мастера</div>
+      <input type="email" id="login-email" placeholder="Email">
+      <input type="password" id="login-password" placeholder="Пароль">
+      <button class="login-btn" onclick="login()">Войти</button>
+      <div class="login-error" id="login-error">Неверный email или пароль</div>
+      <p style="margin-top:1.25rem;font-size:0.9rem;color:var(--mid)">Ещё нет аккаунта? <button onclick="showRegister()" style="background:none;border:none;color:var(--rose);cursor:pointer;font-family:var(--font-sans);font-size:0.9rem;text-decoration:underline">Зарегистрироваться</button></p>
+    </div>
+
+    <!-- РЕГИСТРАЦИЯ -->
+    <div id="register-form" style="display:none">
+      <div class="login-sub">Создать аккаунт мастера</div>
+      <input type="email" id="reg-email" placeholder="Email">
+      <input type="password" id="reg-password" placeholder="Пароль (минимум 6 символов)">
+      <input type="password" id="reg-password2" placeholder="Повторите пароль">
+      <button class="login-btn" onclick="register()">Создать аккаунт</button>
+      <div class="login-error" id="reg-error"></div>
+      <p style="margin-top:1.25rem;font-size:0.9rem;color:var(--mid)">Уже есть аккаунт? <button onclick="showLogin()" style="background:none;border:none;color:var(--rose);cursor:pointer;font-family:var(--font-sans);font-size:0.9rem;text-decoration:underline">Войти</button></p>
+    </div>
   </div>
 </div>
 
@@ -641,12 +657,7 @@ async function login(){
 }
 
 function startApp(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('master-name').textContent=master.name;
-  document.getElementById('menu-btn').style.display='flex';
-  if(window.innerWidth>768) document.getElementById('menu-btn').style.left='256px';
-  initApp();
+  showApp();
 }
 
 function logout(){
@@ -1135,6 +1146,52 @@ async function deleteException(id){await api('DELETE',`schedule?id=eq.${id}`);lo
 function saveWorkHours(){}
 async function loadWorkHours(){}
 
+
+function showRegister(){
+  document.getElementById('login-form').style.display='none';
+  document.getElementById('register-form').style.display='block';
+}
+
+function showLogin(){
+  document.getElementById('register-form').style.display='none';
+  document.getElementById('login-form').style.display='block';
+}
+
+async function register(){
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-password').value;
+  const pass2=document.getElementById('reg-password2').value;
+  const errEl=document.getElementById('reg-error');
+  errEl.style.display='none';
+
+  if(!email){errEl.textContent='Введите email';errEl.style.display='block';return;}
+  if(pass.length<6){errEl.textContent='Пароль минимум 6 символов';errEl.style.display='block';return;}
+  if(pass!==pass2){errEl.textContent='Пароли не совпадают';errEl.style.display='block';return;}
+
+  // Проверяем нет ли уже такого email
+  const existing=await api('GET','masters',null,`?email=eq.${encodeURIComponent(email)}`);
+  if(existing&&existing.length>0){errEl.textContent='Этот email уже зарегистрирован';errEl.style.display='block';return;}
+
+  // Создаём мастера
+  const result=await api('POST','masters',{email,password:pass,name:email.split('@')[0]});
+  if(result&&result.length>0){
+    master=result[0];
+    localStorage.setItem('nail_session',JSON.stringify({master,expires:Date.now()+86400000}));
+    showApp();
+    showToast('Аккаунт создан! Добро пожаловать 🎉');
+  } else {
+    errEl.textContent='Ошибка при создании аккаунта';errEl.style.display='block';
+  }
+}
+
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('master-name').textContent=master.name||master.email;
+  document.getElementById('menu-btn').style.display='flex';
+  if(window.innerWidth>768) document.getElementById('menu-btn').style.left='256px';
+  initApp();
+}
 
 function showToast(msg, type='success'){
   const t=document.getElementById('toast');
