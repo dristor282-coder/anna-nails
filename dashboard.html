@@ -580,17 +580,20 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
       </select>
     </div>
     <div id="day-time-group">
-      <div class="form-row">
-        <div class="form-group"><label>Начало работы</label><input type="time" id="day-start" value="09:00" onchange="fixEndTime()"></div>
-        <div class="form-group"><label>Конец работы</label><input type="time" id="day-end" value="20:00"></div>
-      </div>
-      <!-- Режим слотов -->
-      <div class="form-group" style="margin-top:0.5rem">
+      <!-- Режим слотов — сверху -->
+      <div class="form-group" style="margin-bottom:1rem">
         <label>Режим записи</label>
         <select id="slot-mode" onchange="toggleSlotMode()" style="width:100%;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none">
           <option value="auto">🕐 Автоматически (каждые 30 мин)</option>
           <option value="fixed">📌 Фиксированные слоты</option>
         </select>
+      </div>
+      <!-- Начало/конец — серые если fixed -->
+      <div id="auto-time-group">
+        <div class="form-row">
+          <div class="form-group"><label>Начало работы</label><input type="time" id="day-start" value="09:00" onchange="fixEndTime()"></div>
+          <div class="form-group"><label>Конец работы</label><input type="time" id="day-end" value="20:00"></div>
+        </div>
       </div>
       <!-- Фиксированные слоты -->
       <div id="fixed-slots-group" style="display:none">
@@ -1089,13 +1092,12 @@ function openDaySettings(ds){
     document.getElementById('slot-mode').value='fixed';
     document.getElementById('fixed-slots-value').value=fixedSlots;
     renderSlotsPicker(fixedSlots.split(',').filter(s=>s));
-    document.getElementById('fixed-slots-group').style.display='block';
   } else {
     document.getElementById('slot-mode').value='auto';
     document.getElementById('fixed-slots-value').value='';
     renderSlotsPicker([]);
-    document.getElementById('fixed-slots-group').style.display='none';
   }
+  toggleSlotMode();
   toggleDayType();
   document.querySelectorAll('.copy-day-cb').forEach(cb=>{cb.checked=false;});
   document.getElementById('modal-day-settings').classList.add('open');
@@ -1104,6 +1106,9 @@ function openDaySettings(ds){
 function toggleSlotMode(){
   const isFixed=document.getElementById('slot-mode').value==='fixed';
   document.getElementById('fixed-slots-group').style.display=isFixed?'block':'none';
+  const autoGroup=document.getElementById('auto-time-group');
+  autoGroup.style.opacity=isFixed?'0.4':'1';
+  autoGroup.style.pointerEvents=isFixed?'none':'auto';
   if(!isFixed) document.getElementById('fixed-slots-value').value='';
 }
 
