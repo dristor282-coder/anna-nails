@@ -584,6 +584,24 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
         <div class="form-group"><label>Начало работы</label><input type="time" id="day-start" value="09:00" onchange="fixEndTime()"></div>
         <div class="form-group"><label>Конец работы</label><input type="time" id="day-end" value="20:00"></div>
       </div>
+      <!-- Режим слотов -->
+      <div class="form-group" style="margin-top:0.5rem">
+        <label>Режим записи</label>
+        <select id="slot-mode" onchange="toggleSlotMode()" style="width:100%;padding:0.8rem 1.1rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:1rem;color:var(--dark);background:var(--bg);outline:none">
+          <option value="auto">🕐 Автоматически (каждые 30 мин)</option>
+          <option value="fixed">📌 Фиксированные слоты</option>
+        </select>
+      </div>
+      <!-- Фиксированные слоты -->
+      <div id="fixed-slots-group" style="display:none">
+        <div style="font-size:0.9rem;color:var(--mid);margin-bottom:0.75rem">Выберите доступное время:</div>
+        <div id="slots-picker" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem"></div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <input type="time" id="new-slot-time" style="flex:1;padding:0.6rem 0.8rem;border:0.5px solid var(--border);border-radius:0.75rem;font-family:var(--font-sans);font-size:0.95rem;color:var(--dark);background:var(--bg);outline:none">
+          <button onclick="addFixedSlot()" class="btn" style="padding:0.6rem 1rem;font-size:0.85rem">+ Добавить</button>
+        </div>
+        <input type="hidden" id="fixed-slots-value">
+      </div>
     </div>
     <div style="background:var(--rose-light);border-radius:0.75rem;padding:1rem;margin:1rem 0">
       <div style="font-size:0.9rem;color:var(--mid);margin-bottom:0.75rem">📋 Скопировать это расписание на:</div>
@@ -1065,12 +1083,57 @@ function openDaySettings(ds){
   document.getElementById('day-type').value=ex&&ex.is_day_off?'off':'work';
   document.getElementById('day-start').value=ex&&!ex.is_day_off?ex.start_time.slice(0,5):'09:00';
   document.getElementById('day-end').value=ex&&!ex.is_day_off?ex.end_time.slice(0,5):'20:00';
+  // Загружаем фиксированные слоты
+  const fixedSlots=ex?.fixed_slots||'';
+  if(fixedSlots){
+    document.getElementById('slot-mode').value='fixed';
+    document.getElementById('fixed-slots-value').value=fixedSlots;
+    renderSlotsPicker(fixedSlots.split(',').filter(s=>s));
+    document.getElementById('fixed-slots-group').style.display='block';
+  } else {
+    document.getElementById('slot-mode').value='auto';
+    document.getElementById('fixed-slots-value').value='';
+    renderSlotsPicker([]);
+    document.getElementById('fixed-slots-group').style.display='none';
+  }
   toggleDayType();
-  // Снимаем все чекбоксы и отмечаем текущий день недели
-  document.querySelectorAll('.copy-day-cb').forEach(cb=>{
-    cb.checked=false;
-  });
+  document.querySelectorAll('.copy-day-cb').forEach(cb=>{cb.checked=false;});
   document.getElementById('modal-day-settings').classList.add('open');
+}
+
+function toggleSlotMode(){
+  const isFixed=document.getElementById('slot-mode').value==='fixed';
+  document.getElementById('fixed-slots-group').style.display=isFixed?'block':'none';
+  if(!isFixed) document.getElementById('fixed-slots-value').value='';
+}
+
+function renderSlotsPicker(slots){
+  const picker=document.getElementById('slots-picker');
+  picker.innerHTML=slots.map(s=>`
+    <div style="display:flex;align-items:center;gap:0.25rem;background:var(--rose-light);border:0.5px solid var(--border);border-radius:0.5rem;padding:0.35rem 0.75rem;font-size:0.9rem">
+      <span>${s.trim()}</span>
+      <button onclick="removeFixedSlot('${s.trim()}')" style="background:none;border:none;cursor:pointer;color:var(--rose);font-size:1rem;padding:0;line-height:1">✕</button>
+    </div>`).join('');
+}
+
+function addFixedSlot(){
+  const time=document.getElementById('new-slot-time').value;
+  if(!time){showToast('Выберите время','error');return;}
+  const current=document.getElementById('fixed-slots-value').value;
+  const slots=current?current.split(',').filter(s=>s):[];
+  if(slots.includes(time)){showToast('Этот слот уже добавлен','error');return;}
+  slots.push(time);
+  slots.sort();
+  document.getElementById('fixed-slots-value').value=slots.join(',');
+  renderSlotsPicker(slots);
+  document.getElementById('new-slot-time').value='';
+}
+
+function removeFixedSlot(time){
+  const current=document.getElementById('fixed-slots-value').value;
+  const slots=current.split(',').filter(s=>s&&s.trim()!==time);
+  document.getElementById('fixed-slots-value').value=slots.join(',');
+  renderSlotsPicker(slots);
 }
 
 function toggleDayType(){
@@ -1094,6 +1157,9 @@ async function saveDaySettings(){
   const isOff=document.getElementById('day-type').value==='off';
   const start=document.getElementById('day-start').value||'09:00';
   const end=document.getElementById('day-end').value||'20:00';
+  const fixedSlots=document.getElementById('slot-mode').value==='fixed'
+    ? document.getElementById('fixed-slots-value').value
+    : '';
 
   if(!isOff&&start>=end){
     showToast('Конец работы должен быть позже начала!','error');
@@ -1102,7 +1168,6 @@ async function saveDaySettings(){
 
   const copyDows=[...document.querySelectorAll('.copy-day-cb:checked')].map(cb=>parseInt(cb.value));
 
-  // Собираем все даты которые нужно сохранить
   const datesToSave=[ds];
   if(copyDows.length>0){
     const[y,m]=ds.split('-').map(Number);
@@ -1114,7 +1179,6 @@ async function saveDaySettings(){
     }
   }
 
-  // Загружаем все существующие записи одним запросом
   const minDate=datesToSave.reduce((a,b)=>a<b?a:b);
   const maxDate=datesToSave.reduce((a,b)=>a>b?a:b);
   const existing=await api('GET','schedule',null,
@@ -1122,13 +1186,13 @@ async function saveDaySettings(){
   const existingMap={};
   (existing||[]).forEach(e=>existingMap[e.specific_date]=e);
 
-  // Сохраняем все параллельно
   await Promise.all(datesToSave.map(dds=>{
     const ex=existingMap[dds];
+    const payload={is_day_off:isOff,start_time:isOff?'09:00':start,end_time:isOff?'20:00':end,fixed_slots:fixedSlots};
     if(ex){
-      return api('PATCH',`schedule?id=eq.${ex.id}`,{is_day_off:isOff,start_time:isOff?'09:00':start,end_time:isOff?'20:00':end});
+      return api('PATCH',`schedule?id=eq.${ex.id}`,payload);
     } else {
-      return api('POST','schedule',{master_id:master.id,specific_date:dds,start_time:isOff?'09:00':start,end_time:isOff?'20:00':end,is_day_off:isOff});
+      return api('POST','schedule',{master_id:master.id,specific_date:dds,...payload});
     }
   }));
 
