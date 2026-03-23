@@ -1408,12 +1408,12 @@ async function uploadMasterPhoto(input){
   if(!file)return;
   showToast('Загружаем фото...','success');
   const ext=file.name.split('.').pop();
-  const path=`${master.id}/photo.${ext}`;
+  const path=`${master.id}/photo_${Date.now()}.${ext}`;
   const url=await uploadToStorage('master-photo',path,file);
   if(!url){showToast('Ошибка загрузки','error');return;}
   await api('PATCH',`masters?id=eq.${master.id}`,{photo_url:url});
   const prev=document.getElementById('master-photo-preview');
-  prev.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;
+  prev.innerHTML=`<img src="${url}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover">`;
   showToast('Фото обновлено!');
 }
 
