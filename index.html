@@ -1160,8 +1160,10 @@ function selectBcalDate(ds) {
 }
 
 function updateReminderOptions(ds) {
+  const email = document.getElementById('f-email').value.trim();
   const reminderGroup = document.getElementById('reminder-group');
-  if (!ds) { reminderGroup.style.display = 'none'; return; }
+  // Показываем только если есть и дата и email
+  if (!ds || !email) { reminderGroup.style.display = 'none'; return; }
 
   const now = new Date();
   const [y,m,d] = ds.split('-').map(Number);
