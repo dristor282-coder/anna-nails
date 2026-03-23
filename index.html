@@ -353,7 +353,16 @@ nav ul{display:none}
       </div>
       <div class="form-group">
         <label>Комментарий</label>
-        <textarea id="f-comment" placeholder="Пожелания к дизайну или другие вопросы..."></textarea>
+        <div style="position:relative">
+          <textarea id="f-comment" placeholder="Пожелания к дизайну или другие вопросы..." style="padding-right:3rem"></textarea>
+          <label for="f-attachment" style="position:absolute;right:0.75rem;bottom:0.75rem;cursor:pointer;font-size:1.4rem;color:var(--mid);transition:color 0.2s" title="Прикрепить фото">📎</label>
+          <input type="file" id="f-attachment" accept="image/*" style="display:none" onchange="onAttachmentSelected(this)">
+        </div>
+        <div id="attachment-preview" style="display:none;margin-top:0.5rem;display:flex;align-items:center;gap:0.75rem;background:var(--rose-light);border-radius:0.75rem;padding:0.65rem 1rem">
+          <img id="attachment-thumb" style="width:48px;height:48px;object-fit:cover;border-radius:0.5rem">
+          <span id="attachment-name" style="font-size:0.9rem;color:var(--mid);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+          <button onclick="removeAttachment()" style="background:none;border:none;cursor:pointer;color:var(--rose);font-size:1.1rem">✕</button>
+        </div>
       </div>
       <button class="form-submit" id="f-submit" onclick="submitBooking()">Записаться</button>
       <p class="form-note">Мастер подтвердит запись в ближайшее время</p>
@@ -450,6 +459,26 @@ function formatDur(m){
 }
 
 async function loadServices() {
+  // Загружаем портфолио мастера
+  const masterData = await api('GET', 'masters', null, `?id=eq.${MASTER_ID}&select=portfolio_urls,photo_url`);
+  if (masterData?.[0]) {
+    const m = masterData[0];
+    // Фото мастера
+    if (m.photo_url) {
+      const heroImg = document.querySelector('.hero-card-main .img-placeholder');
+      if (heroImg) heroImg.innerHTML = `<img src="${m.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:1.5rem">`;
+    }
+    // Портфолио
+    if (m.portfolio_urls) {
+      const urls = m.portfolio_urls.split(',').filter(s=>s);
+      const grid = document.querySelector('.portfolio-grid');
+      if (grid && urls.length > 0) {
+        grid.innerHTML = urls.map((url, i) =>
+          `<div class="portfolio-item" onclick="openLightbox(${i})"><img src="${url}"></div>`
+        ).join('');
+      }
+    }
+  }
   const grid = document.getElementById('services-grid');
   const select = document.getElementById('f-service');
   const icons = ['💅', '✨', '🌸', '🎨', '💎', '🌟', '🪷', '✦'];
@@ -633,8 +662,42 @@ function minToTime(min) {
   return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 }
 
-const SMSC_LOGIN = 'skr';
-const SMSC_PASS = '-Lz.SvG6fEMHuNC';
+
+let attachmentFile = null;
+
+function onAttachmentSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  attachmentFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('attachment-thumb').src = e.target.result;
+    document.getElementById('attachment-name').textContent = file.name;
+    document.getElementById('attachment-preview').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeAttachment() {
+  attachmentFile = null;
+  document.getElementById('f-attachment').value = '';
+  document.getElementById('attachment-preview').style.display = 'none';
+}
+
+async function uploadFile(bucket, path, file) {
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': file.type,
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if (!r.ok) return null;
+  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+}
 let clientSession = null;
 let pendingBooking = null;
 
@@ -707,6 +770,15 @@ async function submitBooking() {
   btn.disabled = true;
   btn.textContent = 'Отправляем...';
 
+  // Загружаем фото если есть
+  let attachmentUrl = '';
+  if (attachmentFile) {
+    btn.textContent = 'Загружаем фото...';
+    const ext = attachmentFile.name.split('.').pop();
+    const path = `${MASTER_ID}/${Date.now()}.${ext}`;
+    attachmentUrl = await uploadFile('booking-attachments', path, attachmentFile) || '';
+  }
+
   const result = await api('POST', 'bookings', {
     master_id: MASTER_ID,
     service_id: serviceId,
@@ -718,6 +790,7 @@ async function submitBooking() {
     end_time: endTime,
     comment: comment,
     reminder_hours: reminder ? parseInt(reminder) : null,
+    attachment_url: attachmentUrl,
     status: 'pending'
   });
 
