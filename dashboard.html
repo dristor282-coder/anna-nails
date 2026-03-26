@@ -852,14 +852,39 @@ async function loadBookings(){
   }).join('');
 }
 
-async function updStatus(id,status){
-  await api('PATCH',`bookings?id=eq.${id}`,{status, notify_sent: false});
+const WEBHOOK_URL = 'https://n8n.skrafkhost.ru/webhook/a6e8d638-2837-4b26-be27-9d59181f98be';
+
+async function sendWebhook(data) {
+  try {
+    await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+  } catch(e) { console.log('Webhook error:', e); }
+}
+
+async function updStatus(id, status) {
+  // Сначала получаем данные записи
+  const bookings = await api('GET', 'bookings', null, `?id=eq.${id}&select=*,services(name)`);
+  const b = bookings?.[0];
+  await api('PATCH', `bookings?id=eq.${id}`, {status});
   loadBookings();
   loadDashStats();
-  // Через 90 секунд ставим notify_sent=true (n8n успеет за 1 минуту)
-  setTimeout(async()=>{
-    await api('PATCH',`bookings?id=eq.${id}`,{notify_sent: true});
-  }, 90000);
+  // Шлём webhook мгновенно
+  if (b && b.client_email) {
+    await sendWebhook({
+      type: 'status_change',
+      status,
+      client_name: b.client_name,
+      client_email: b.client_email,
+      client_phone: b.client_phone,
+      service_name: b.services?.name || '—',
+      booking_date: b.booking_date,
+      start_time: b.start_time,
+      comment: b.comment || ''
+    });
+  }
 }
 
 function openReschedule(id,name,time){
