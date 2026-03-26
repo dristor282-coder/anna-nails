@@ -496,6 +496,7 @@ async function loadServices() {
 
   grid.innerHTML = data.map((s, i) => `
     <div class="service-card" onclick="openSvcModal('${s.id}')">
+      ${s.image_url ? `<div style="margin:-1.75rem -1.75rem 1rem;height:160px;overflow:hidden;border-radius:1.25rem 1.25rem 0 0"><img src="${s.image_url}" style="width:100%;height:100%;object-fit:cover"></div>` : ''}
       <div class="service-icon">${s.emoji || icons[i % icons.length]}</div>
       <h3>${s.name}</h3>
       ${s.description ? `<div class="service-desc">${s.description}</div>` : ''}
@@ -520,6 +521,20 @@ function openSvcModal(id) {
   document.getElementById('svc-m-dur').textContent = '⏱ ' + formatDur(s.duration);
   document.getElementById('svc-m-desc').textContent = s.description || '';
   document.getElementById('svc-m-desc').style.display = s.description ? 'block' : 'none';
+  // Фото услуги
+  let imgEl = document.getElementById('svc-m-img');
+  if (!imgEl) {
+    imgEl = document.createElement('div');
+    imgEl.id = 'svc-m-img';
+    imgEl.style.cssText = 'margin:-2rem -2rem 1.5rem;height:200px;overflow:hidden;border-radius:1.5rem 1.5rem 0 0';
+    document.querySelector('.svc-modal').insertBefore(imgEl, document.querySelector('.svc-modal').firstChild);
+  }
+  if (s.image_url) {
+    imgEl.innerHTML = `<img src="${s.image_url}" style="width:100%;height:100%;object-fit:cover">`;
+    imgEl.style.display = 'block';
+  } else {
+    imgEl.style.display = 'none';
+  }
   document.getElementById('svc-modal').classList.add('open');
 }
 
