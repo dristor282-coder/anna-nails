@@ -582,6 +582,18 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
     </div>
     <div class="form-group"><label>Название</label><input type="text" id="s-name" placeholder="Маникюр с покрытием"></div>
     <div class="form-group"><label>Описание <span style="color:var(--mid);font-weight:400">(необязательно)</span></label><textarea id="s-desc" placeholder="Укажите что входит в услугу..." style="resize:vertical;min-height:80px"></textarea></div>
+    <div class="form-group">
+      <label>Фото услуги <span style="color:var(--mid);font-weight:400">(необязательно)</span></label>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div id="s-img-preview" style="width:80px;height:80px;border-radius:0.75rem;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:1.5rem;overflow:hidden;flex-shrink:0">🖼</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <label for="s-image-input" class="btn" style="cursor:pointer;display:inline-block;font-size:0.85rem;padding:0.5rem 1rem">📷 Загрузить фото</label>
+          <input type="file" id="s-image-input" accept="image/*" style="display:none" onchange="onServiceImageSelected(this)">
+          <button id="s-img-remove" onclick="removeServiceImage()" style="display:none;background:none;border:none;color:#E24B4A;cursor:pointer;font-size:0.85rem;text-align:left;font-family:var(--font-sans)">✕ Удалить фото</button>
+        </div>
+      </div>
+      <input type="hidden" id="s-image-url">
+    </div>
     <div class="form-group"><label>Цена (₽)</label><input type="text" inputmode="numeric" id="s-price" placeholder="1500"></div>
     <div class="form-group">
       <label>Длительность</label>
@@ -956,7 +968,28 @@ function goDay(ds){
   loadBookings();
 }
 
-const SERVICE_EMOJIS=['💅','✨','💎','🌸','🎨','🌟','🪷','✦','🦋','🌺','💐','🍀','🫧','🩷','💆','🧖'];
+let serviceImageFile = null;
+
+function onServiceImageSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  serviceImageFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('s-img-preview');
+    prev.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
+    document.getElementById('s-img-remove').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeServiceImage() {
+  serviceImageFile = null;
+  document.getElementById('s-image-input').value = '';
+  document.getElementById('s-image-url').value = '';
+  document.getElementById('s-img-preview').innerHTML = '🖼';
+  document.getElementById('s-img-remove').style.display = 'none';
+}
 
 function initEmojiPicker(){
   const picker=document.getElementById('emoji-picker');
@@ -1000,11 +1033,12 @@ async function loadServices(){
   document.getElementById('b-service').innerHTML=services.map(s=>`<option value="${s.id}">${s.emoji||'💅'} ${s.name} — ${s.price} ₽ (${formatDuration(s.duration)})</option>`).join('');
   if(!data||data.length===0){list.innerHTML='<div class="empty-state"><div class="emoji">💅</div><p>Добавьте первую услугу</p></div>';return;}
   list.innerHTML=data.map(s=>`<div class="service-item">
+    ${s.image_url?`<img src="${s.image_url}" style="width:100%;height:140px;object-fit:cover;border-radius:0.75rem;margin-bottom:0.75rem">` :''}
     <h4>${s.emoji||'💅'} ${s.name}</h4>
     ${s.description?`<p style="font-size:0.9rem;color:var(--mid);margin:0.4rem 0;font-family:var(--font-sans);line-height:1.5">${s.description}</p>`:''}
     <div class="service-meta"><span class="service-price-tag">${s.price.toLocaleString()} ₽</span><span>⏱ ${formatDuration(s.duration)}</span></div>
     <div class="service-item-actions">
-      <button class="action-btn" onclick="openEditService('${s.id}','${(s.name||'').replace(/'/g,"\\'")}',${s.price},${s.duration},'${s.emoji||'💅'}','${(s.description||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')">Изменить</button>
+      <button class="action-btn" onclick="openEditService('${s.id}','${(s.name||'').replace(/'/g,"\\'")}',${s.price},${s.duration},'${s.emoji||'💅'}','${(s.description||'').replace(/'/g,"\\'").replace(/\n/g,' ')}','${s.image_url||''}')">Изменить</button>
       <button class="action-btn danger" onclick="delSvc('${s.id}')">Удалить</button>
     </div>
   </div>`).join('');
@@ -1018,17 +1052,30 @@ function openAddService(){
   document.getElementById('s-price').value='';
   document.getElementById('s-duration-val').value='';
   document.getElementById('s-duration-unit').value='min';
+  document.getElementById('s-image-url').value='';
+  document.getElementById('s-img-preview').innerHTML='🖼';
+  document.getElementById('s-img-remove').style.display='none';
+  serviceImageFile=null;
   selectEmoji('💅');
   initEmojiPicker();
   document.getElementById('modal-service').classList.add('open');
 }
 
-function openEditService(id,name,price,duration,emoji,desc){
+function openEditService(id,name,price,duration,emoji,desc,imageUrl){
   document.getElementById('service-modal-title').textContent='Редактировать услугу';
   document.getElementById('s-id').value=id;
   document.getElementById('s-name').value=name;
   document.getElementById('s-desc').value=desc||'';
   document.getElementById('s-price').value=price;
+  document.getElementById('s-image-url').value=imageUrl||'';
+  serviceImageFile=null;
+  if(imageUrl){
+    document.getElementById('s-img-preview').innerHTML=`<img src="${imageUrl}" style="width:100%;height:100%;object-fit:cover">`;
+    document.getElementById('s-img-remove').style.display='block';
+  } else {
+    document.getElementById('s-img-preview').innerHTML='🖼';
+    document.getElementById('s-img-remove').style.display='none';
+  }
   if(duration>=60&&duration%60===0){
     document.getElementById('s-duration-val').value=duration/60;
     document.getElementById('s-duration-unit').value='hour';
@@ -1051,8 +1098,20 @@ async function saveService(){
   const emoji=document.getElementById('s-emoji').value||'💅';
   const description=document.getElementById('s-desc').value||'';
   if(!name||!price||!dVal){showToast('Заполните все поля','error');return;}
-  if(id){await api('PATCH',`services?id=eq.${id}`,{name,price,duration,emoji,description});}
-  else{await api('POST','services',{master_id:master.id,name,price,duration,emoji,description});}
+
+  // Загружаем фото если есть новое
+  let imageUrl=document.getElementById('s-image-url').value||'';
+  if(serviceImageFile){
+    showToast('Загружаем фото...','success');
+    const ext=serviceImageFile.name.split('.').pop();
+    const path=`${master.id}/${Date.now()}.${ext}`;
+    const url=await uploadToStorage('services',path,serviceImageFile);
+    if(url) imageUrl=url;
+    serviceImageFile=null;
+  }
+
+  if(id){await api('PATCH',`services?id=eq.${id}`,{name,price,duration,emoji,description,image_url:imageUrl});}
+  else{await api('POST','services',{master_id:master.id,name,price,duration,emoji,description,image_url:imageUrl});}
   closeModal('modal-service');loadServices();
   showToast(id?'Услуга обновлена!':'Услуга добавлена!');
 }
