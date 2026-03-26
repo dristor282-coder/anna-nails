@@ -666,7 +666,17 @@ function minToTime(min) {
 }
 
 
-let attachmentFile = null;
+const WEBHOOK_URL = 'https://n8n.skrafkhost.ru/webhook/a6e8d638-2837-4b26-be27-9d59181f98be';
+
+async function sendWebhook(data) {
+  try {
+    await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+  } catch(e) {}
+}
 
 function onAttachmentSelected(input) {
   const file = input.files[0];
@@ -810,6 +820,13 @@ async function submitBooking() {
       ts: Date.now()
     }));
     showSuccess(detailsText, 'pending');
+    // Уведомляем мастера через webhook
+    api("GET","masters",null,`?id=eq.${MASTER_ID}&select=email,name`).then(md=>{
+      if(md?.[0]?.email){
+        const svc=servicesData.find(s=>s.id===serviceId);
+        sendWebhook({type:"new_booking",master_email:md[0].email,master_name:md[0].name,client_name:name,client_phone:phone.replace(/\D/g,""),service_name:svc?.name||"—",booking_date:date,start_time:time,comment:comment});
+      }
+    });
   } else {
     btn.disabled = false;
     btn.textContent = 'Записаться';
