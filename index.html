@@ -820,6 +820,8 @@ async function submitBooking() {
       ts: Date.now()
     }));
     showSuccess(detailsText, 'pending');
+    btn.disabled = false;
+    btn.textContent = 'Записаться';
     // Уведомляем мастера через webhook
     api("GET","masters",null,`?id=eq.${MASTER_ID}&select=email,name`).then(md=>{
       if(md?.[0]?.email){
