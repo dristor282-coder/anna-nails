@@ -113,6 +113,10 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
   .stats-big-card .num{font-size:1.6rem;min-width:80px}
   .stats-big-card .lbl{font-size:0.95rem}
 
+  /* Расписание неделя — горизонтальный скролл */
+  .week-grid{display:flex!important;overflow-x:auto;gap:0.5rem;padding-bottom:0.5rem;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory}
+  .week-col{min-width:120px;scroll-snap-align:start;flex-shrink:0}
+
   /* Рабочие часы */
   .work-hours-grid{grid-template-columns:1fr}
   .time-row{flex-wrap:wrap;gap:0.5rem}
@@ -942,7 +946,7 @@ async function renderSched(){
     content.innerHTML=`<div class="week-grid">${dates.map((d,i)=>{
       const ds=fd(d),past=isPast(ds),today=isToday(ds);
       const slots=(data||[]).filter(b=>b.booking_date===ds);
-      return`<div class="day-col ${today?'is-today':''} ${past?'is-past':''}"><div class="day-header">${DAYS_W[i]}</div><div class="day-date ${today?'today':past?'past':''}">${d.getDate()}</div>${past&&slots.length===0?'<div class="past-label">день прошёл</div>':slots.length===0?'<div style="font-size:.78rem;color:var(--mid)">Нет записей</div>':slots.map(b=>`<div class="day-slot" onclick="goDay('${ds}')"><strong>${b.start_time.slice(0,5)}</strong>${b.client_name}<br><span style="color:var(--mid)">${b.services?.name||''}</span></div>`).join('')}</div>`;
+      return`<div class="day-col week-col ${today?'is-today':''} ${past?'is-past':''}"><div class="day-header">${DAYS_W[i]}</div><div class="day-date ${today?'today':past?'past':''}">${d.getDate()}</div>${past&&slots.length===0?'<div class="past-label">день прошёл</div>':slots.length===0?'<div style="font-size:.78rem;color:var(--mid)">Нет записей</div>':slots.map(b=>`<div class="day-slot" onclick="goDay('${ds}')"><strong>${b.start_time.slice(0,5)}</strong>${b.client_name}<br><span style="color:var(--mid)">${b.services?.name||''}</span></div>`).join('')}</div>`;
     }).join('')}</div>`;
   } else {
     const y=schedDate.getFullYear(),m=schedDate.getMonth();
