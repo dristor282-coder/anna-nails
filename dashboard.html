@@ -1032,13 +1032,13 @@ async function loadServices(){
   services=data||[];
   document.getElementById('b-service').innerHTML=services.map(s=>`<option value="${s.id}">${s.emoji||'💅'} ${s.name} — ${s.price} ₽ (${formatDuration(s.duration)})</option>`).join('');
   if(!data||data.length===0){list.innerHTML='<div class="empty-state"><div class="emoji">💅</div><p>Добавьте первую услугу</p></div>';return;}
-  list.innerHTML=data.map(s=>`<div class="service-item">
+  list.innerHTML=data.map((s,i)=>`<div class="service-item">
     ${s.image_url?`<img src="${s.image_url}" style="width:100%;height:140px;object-fit:cover;border-radius:0.75rem;margin-bottom:0.75rem">` :''}
     <h4>${s.emoji||'💅'} ${s.name}</h4>
     ${s.description?`<p style="font-size:0.9rem;color:var(--mid);margin:0.4rem 0;font-family:var(--font-sans);line-height:1.5">${s.description}</p>`:''}
     <div class="service-meta"><span class="service-price-tag">${s.price.toLocaleString()} ₽</span><span>⏱ ${formatDuration(s.duration)}</span></div>
     <div class="service-item-actions">
-      <button class="action-btn" onclick="openEditService('${s.id}','${(s.name||'').replace(/'/g,"\\'")}',${s.price},${s.duration},'${s.emoji||'💅'}','${(s.description||'').replace(/'/g,"\\'").replace(/\n/g,' ')}','${s.image_url||''}')">Изменить</button>
+      <button class="action-btn" onclick="openEditServiceByIndex(${i})">Изменить</button>
       <button class="action-btn danger" onclick="delSvc('${s.id}')">Удалить</button>
     </div>
   </div>`).join('');
@@ -1059,6 +1059,12 @@ function openAddService(){
   selectEmoji('💅');
   initEmojiPicker();
   document.getElementById('modal-service').classList.add('open');
+}
+
+function openEditServiceByIndex(i){
+  const s=services[i];
+  if(!s)return;
+  openEditService(s.id,s.name,s.price,s.duration,s.emoji||'💅',s.description||'',s.image_url||'');
 }
 
 function openEditService(id,name,price,duration,emoji,desc,imageUrl){
