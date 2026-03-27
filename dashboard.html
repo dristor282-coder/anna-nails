@@ -108,10 +108,10 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--dark);min-
   .visit-date{min-width:auto;width:100%}
 
   /* Статистика страница */
-  .stats-section{display:flex;flex-direction:column;gap:0.5rem}
-  .stats-big-card{display:flex;align-items:center;gap:1rem;padding:0.85rem 1.1rem}
-  .stats-big-card .num{font-size:1.6rem;min-width:80px}
-  .stats-big-card .lbl{font-size:0.95rem}
+  .stats-section{display:flex!important;flex-direction:row!important;overflow-x:auto;gap:0.75rem;margin-bottom:1rem;padding-bottom:0.5rem;-webkit-overflow-scrolling:touch}
+  .stats-big-card{min-width:140px;flex-shrink:0;display:flex;flex-direction:column;padding:1rem 1.1rem}
+  .stats-big-card .num{font-size:1.6rem}
+  .stats-big-card .lbl{font-size:0.85rem}
 
   /* Расписание неделя — горизонтальный скролл */
   .week-grid{display:flex!important;overflow-x:auto;gap:0.5rem;padding-bottom:0.5rem;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory}
