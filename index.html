@@ -224,19 +224,21 @@ nav ul{display:none}
 <!-- Падающие лепестки -->
 <style>
 @keyframes fall {
-  0%   { transform: translateY(-20px) rotate(0deg); opacity:0 }
+  0%   { transform: translateY(0px) rotate(0deg); opacity:0 }
   10%  { opacity: 0.7 }
   90%  { opacity: 0.5 }
-  100% { transform: translateY(100vh) rotate(360deg); opacity:0 }
+  100% { transform: translateY(700px) rotate(360deg); opacity:0 }
 }
+.petals-wrap { position:absolute;top:0;left:0;width:100%;height:700px;overflow:hidden;pointer-events:none;z-index:0 }
 .petal {
-  position: fixed;
+  position: absolute;
   top: -20px;
   pointer-events: none;
   z-index: 0;
   animation: fall linear 1 forwards;
 }
 </style>
+<div class="petals-wrap">
 <div class="petal" style="left:8%;animation-duration:7s;animation-delay:0s">
   <svg width="12" height="18" viewBox="0 0 12 18"><ellipse cx="6" cy="9" rx="4" ry="8" fill="#E8A89C" opacity="0.6" transform="rotate(20,6,9)"/></svg>
 </div>
@@ -266,6 +268,7 @@ nav ul{display:none}
 </div>
 <div class="petal" style="left:75%;animation-duration:10s;animation-delay:6s">
   <svg width="10" height="15" viewBox="0 0 10 15"><ellipse cx="5" cy="7" rx="3" ry="6" fill="#C8726A" opacity="0.4" transform="rotate(-20,5,7)"/></svg>
+</div>
 </div>
 <!-- LIGHTBOX -->
 <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;align-items:center;justify-content:center;flex-direction:column">
