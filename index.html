@@ -178,68 +178,95 @@ nav ul{display:none}
 </style>
 </head>
 <body>
-<!-- Фоновые ветки -->
-<svg style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.35" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-  <!-- Левый верхний угол -->
-  <path d="M-10,80 Q20,50 40,20 Q55,5 70,0" stroke="#C8726A" stroke-width="2" fill="none"/>
-  <path d="M25,48 Q15,30 10,10" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <path d="M40,20 Q55,15 60,5" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <path d="M15,62 Q5,50 0,35" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <circle cx="10" cy="10" r="2.5" fill="#C8726A"/>
-  <circle cx="60" cy="5" r="2" fill="#E8A89C"/>
-  <circle cx="70" cy="0" r="3" fill="#C8726A"/>
-  <circle cx="0" cy="35" r="2" fill="#E8A89C"/>
-  <circle cx="25" cy="48" r="1.5" fill="#C8726A"/>
-
-  <!-- Левый нижний угол -->
-  <path d="M-10,calc(100% - 60px) Q20,calc(100% - 30px) 50,100%" stroke="#C8726A" stroke-width="2" fill="none"/>
-  <path d="M0,850 Q30,820 50,790 Q65,775 80,800" stroke="#C8726A" stroke-width="2" fill="none"/>
-  <path d="M30,820 Q20,800 15,780" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <path d="M50,790 Q60,775 70,760" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <circle cx="15" cy="780" r="2.5" fill="#C8726A"/>
-  <circle cx="70" cy="760" r="2" fill="#E8A89C"/>
-  <circle cx="80" cy="800" r="2" fill="#C8726A"/>
-
-  <!-- Правый верхний угол -->
-  <path d="M1210,80 Q1180,50 1160,20 Q1145,5 1130,0" stroke="#C8726A" stroke-width="2" fill="none"/>
-  <path d="M1175,48 Q1185,30 1190,10" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <path d="M1160,20 Q1145,15 1140,5" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <path d="M1185,62 Q1195,50 1200,35" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <circle cx="1190" cy="10" r="2.5" fill="#C8726A"/>
-  <circle cx="1140" cy="5" r="2" fill="#E8A89C"/>
-  <circle cx="1130" cy="0" r="3" fill="#C8726A"/>
-  <circle cx="1200" cy="35" r="2" fill="#E8A89C"/>
-
-  <!-- Правый нижний угол -->
-  <path d="M1210,850 Q1180,820 1150,790 Q1135,775 1120,800" stroke="#C8726A" stroke-width="2" fill="none"/>
-  <path d="M1180,820 Q1190,800 1195,780" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <path d="M1150,790 Q1140,775 1130,760" stroke="#C8726A" stroke-width="1.2" fill="none"/>
-  <circle cx="1195" cy="780" r="2.5" fill="#C8726A"/>
-  <circle cx="1130" cy="760" r="2" fill="#E8A89C"/>
-  <circle cx="1120" cy="800" r="2" fill="#C8726A"/>
-
-  <!-- Маленькие цветочки вдоль веток (5 лепестков) -->
-  <g transform="translate(25,48)">
+<!-- Фоновые ветки (статичные) -->
+<svg style="position:absolute;top:0;left:0;width:100%;height:300px;pointer-events:none;z-index:0;opacity:0.35" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1200 300">
+  <!-- Левый верхний угол — ветка -->
+  <path d="M-10,120 Q30,80 60,45 Q80,20 100,0" stroke="#C8726A" stroke-width="2" fill="none"/>
+  <path d="M35,78 Q20,50 12,20" stroke="#C8726A" stroke-width="1.2" fill="none"/>
+  <path d="M60,45 Q75,30 82,10" stroke="#C8726A" stroke-width="1.2" fill="none"/>
+  <path d="M18,98 Q5,75 0,50" stroke="#C8726A" stroke-width="1.2" fill="none"/>
+  <circle cx="12" cy="20" r="3" fill="#C8726A"/>
+  <circle cx="82" cy="10" r="2.5" fill="#E8A89C"/>
+  <circle cx="100" cy="0" r="3.5" fill="#C8726A"/>
+  <circle cx="0" cy="50" r="2.5" fill="#E8A89C"/>
+  <g transform="translate(35,78)">
+    <circle cx="0" cy="-5" r="2.5" fill="#E8A89C"/><circle cx="5" cy="-1" r="2.5" fill="#E8A89C"/>
+    <circle cx="3" cy="4" r="2.5" fill="#E8A89C"/><circle cx="-3" cy="4" r="2.5" fill="#E8A89C"/>
+    <circle cx="-5" cy="-1" r="2.5" fill="#E8A89C"/><circle cx="0" cy="0" r="2" fill="#C8726A"/>
+  </g>
+  <g transform="translate(60,45)">
     <circle cx="0" cy="-4" r="2" fill="#E8A89C"/><circle cx="4" cy="-1" r="2" fill="#E8A89C"/>
     <circle cx="2" cy="3" r="2" fill="#E8A89C"/><circle cx="-2" cy="3" r="2" fill="#E8A89C"/>
     <circle cx="-4" cy="-1" r="2" fill="#E8A89C"/><circle cx="0" cy="0" r="1.5" fill="#C8726A"/>
   </g>
-  <g transform="translate(1175,48)">
-    <circle cx="0" cy="-4" r="2" fill="#E8A89C"/><circle cx="4" cy="-1" r="2" fill="#E8A89C"/>
-    <circle cx="2" cy="3" r="2" fill="#E8A89C"/><circle cx="-2" cy="3" r="2" fill="#E8A89C"/>
-    <circle cx="-4" cy="-1" r="2" fill="#E8A89C"/><circle cx="0" cy="0" r="1.5" fill="#C8726A"/>
+
+  <!-- Правый верхний угол — ветка -->
+  <path d="M1210,120 Q1170,80 1140,45 Q1120,20 1100,0" stroke="#C8726A" stroke-width="2" fill="none"/>
+  <path d="M1165,78 Q1180,50 1188,20" stroke="#C8726A" stroke-width="1.2" fill="none"/>
+  <path d="M1140,45 Q1125,30 1118,10" stroke="#C8726A" stroke-width="1.2" fill="none"/>
+  <path d="M1182,98 Q1195,75 1200,50" stroke="#C8726A" stroke-width="1.2" fill="none"/>
+  <circle cx="1188" cy="20" r="3" fill="#C8726A"/>
+  <circle cx="1118" cy="10" r="2.5" fill="#E8A89C"/>
+  <circle cx="1100" cy="0" r="3.5" fill="#C8726A"/>
+  <circle cx="1200" cy="50" r="2.5" fill="#E8A89C"/>
+  <g transform="translate(1165,78)">
+    <circle cx="0" cy="-5" r="2.5" fill="#E8A89C"/><circle cx="5" cy="-1" r="2.5" fill="#E8A89C"/>
+    <circle cx="3" cy="4" r="2.5" fill="#E8A89C"/><circle cx="-3" cy="4" r="2.5" fill="#E8A89C"/>
+    <circle cx="-5" cy="-1" r="2.5" fill="#E8A89C"/><circle cx="0" cy="0" r="2" fill="#C8726A"/>
   </g>
-  <g transform="translate(50,790)">
-    <circle cx="0" cy="-4" r="2" fill="#E8A89C"/><circle cx="4" cy="-1" r="2" fill="#E8A89C"/>
-    <circle cx="2" cy="3" r="2" fill="#E8A89C"/><circle cx="-2" cy="3" r="2" fill="#E8A89C"/>
-    <circle cx="-4" cy="-1" r="2" fill="#E8A89C"/><circle cx="0" cy="0" r="1.5" fill="#C8726A"/>
-  </g>
-  <g transform="translate(1150,790)">
+  <g transform="translate(1140,45)">
     <circle cx="0" cy="-4" r="2" fill="#E8A89C"/><circle cx="4" cy="-1" r="2" fill="#E8A89C"/>
     <circle cx="2" cy="3" r="2" fill="#E8A89C"/><circle cx="-2" cy="3" r="2" fill="#E8A89C"/>
     <circle cx="-4" cy="-1" r="2" fill="#E8A89C"/><circle cx="0" cy="0" r="1.5" fill="#C8726A"/>
   </g>
 </svg>
+
+<!-- Падающие лепестки -->
+<style>
+@keyframes fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity:0 }
+  10%  { opacity: 0.7 }
+  90%  { opacity: 0.5 }
+  100% { transform: translateY(100vh) rotate(360deg); opacity:0 }
+}
+.petal {
+  position: fixed;
+  top: -20px;
+  pointer-events: none;
+  z-index: 0;
+  animation: fall linear 1 forwards;
+}
+</style>
+<div class="petal" style="left:8%;animation-duration:7s;animation-delay:0s">
+  <svg width="12" height="18" viewBox="0 0 12 18"><ellipse cx="6" cy="9" rx="4" ry="8" fill="#E8A89C" opacity="0.6" transform="rotate(20,6,9)"/></svg>
+</div>
+<div class="petal" style="left:18%;animation-duration:9s;animation-delay:1.5s">
+  <svg width="10" height="15" viewBox="0 0 10 15"><ellipse cx="5" cy="7" rx="3" ry="6" fill="#C8726A" opacity="0.5" transform="rotate(-15,5,7)"/></svg>
+</div>
+<div class="petal" style="left:32%;animation-duration:8s;animation-delay:3s">
+  <svg width="12" height="18" viewBox="0 0 12 18"><ellipse cx="6" cy="9" rx="4" ry="8" fill="#E8A89C" opacity="0.55" transform="rotate(30,6,9)"/></svg>
+</div>
+<div class="petal" style="left:47%;animation-duration:10s;animation-delay:0.5s">
+  <svg width="9" height="14" viewBox="0 0 9 14"><ellipse cx="4" cy="7" rx="3" ry="6" fill="#C8726A" opacity="0.45" transform="rotate(-25,4,7)"/></svg>
+</div>
+<div class="petal" style="left:58%;animation-duration:7.5s;animation-delay:2s">
+  <svg width="12" height="18" viewBox="0 0 12 18"><ellipse cx="6" cy="9" rx="4" ry="8" fill="#E8A89C" opacity="0.6" transform="rotate(10,6,9)"/></svg>
+</div>
+<div class="petal" style="left:70%;animation-duration:9.5s;animation-delay:4s">
+  <svg width="10" height="15" viewBox="0 0 10 15"><ellipse cx="5" cy="7" rx="3" ry="6" fill="#C8726A" opacity="0.5" transform="rotate(-35,5,7)"/></svg>
+</div>
+<div class="petal" style="left:83%;animation-duration:8.5s;animation-delay:1s">
+  <svg width="12" height="18" viewBox="0 0 12 18"><ellipse cx="6" cy="9" rx="4" ry="8" fill="#E8A89C" opacity="0.55" transform="rotate(25,6,9)"/></svg>
+</div>
+<div class="petal" style="left:93%;animation-duration:7s;animation-delay:3.5s">
+  <svg width="9" height="14" viewBox="0 0 9 14"><ellipse cx="4" cy="7" rx="3" ry="6" fill="#C8726A" opacity="0.5" transform="rotate(-10,4,7)"/></svg>
+</div>
+<div class="petal" style="left:25%;animation-duration:11s;animation-delay:5s">
+  <svg width="11" height="16" viewBox="0 0 11 16"><ellipse cx="5" cy="8" rx="3.5" ry="7" fill="#E8A89C" opacity="0.45" transform="rotate(40,5,8)"/></svg>
+</div>
+<div class="petal" style="left:75%;animation-duration:10s;animation-delay:6s">
+  <svg width="10" height="15" viewBox="0 0 10 15"><ellipse cx="5" cy="7" rx="3" ry="6" fill="#C8726A" opacity="0.4" transform="rotate(-20,5,7)"/></svg>
+</div>
 <!-- LIGHTBOX -->
 <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;align-items:center;justify-content:center;flex-direction:column">
   <button onclick="closeLightbox()" style="position:absolute;top:1.25rem;right:1.25rem;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.5rem;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
